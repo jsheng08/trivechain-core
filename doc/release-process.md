@@ -29,7 +29,7 @@ If you're using the automated script (found in [contrib/gitian-build.py](/contri
 Check out the source code in the following directory hierarchy.
 
 	cd /path/to/your/toplevel/build
-	git clone https://github.com/trivechainpay/gitian.sigs.git
+	git clone https://github.com/trivechain/gitian.sigs.git
 	git clone https://github.com/trivechain/trivechain-detached-sigs.git
 	git clone https://github.com/devrandom/gitian-builder.git
 	git clone https://github.com/trivechain/trivechain.git

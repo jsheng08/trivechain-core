@@ -23,7 +23,7 @@ def setup():
             exit(1)
     subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + programs)
     if not os.path.isdir('gitian.sigs'):
-        subprocess.check_call(['git', 'clone', 'https://github.com/trivechainpay/gitian.sigs.git'])
+        subprocess.check_call(['git', 'clone', 'https://github.com/trivechain/gitian.sigs.git'])
     if not os.path.isdir('trivechain-detached-sigs'):
         subprocess.check_call(['git', 'clone', 'https://github.com/trivechain/trivechain-detached-sigs.git'])
     if not os.path.isdir('gitian-builder'):

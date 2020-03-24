@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-DOCKER_IMAGE=${DOCKER_IMAGE:-trivechainpay/trivechaind-develop}
+DOCKER_IMAGE=${DOCKER_IMAGE:-trivechain/trivechain-core-develop}
 DOCKER_TAG=${DOCKER_TAG:-latest}
 
 if [ -n "$DOCKER_REPO" ]; then

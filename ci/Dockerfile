@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install pyzmq # really needed?
 
 # trivechain_hash
-RUN git clone https://github.com/trivechainpay/trivechain_hash
+RUN git clone https://github.com/trivechain/trivechain_hash
 RUN cd trivechain_hash && python3 setup.py install
 
 ARG USER_ID=1000

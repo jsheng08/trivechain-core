@@ -35,7 +35,7 @@ for(int i = 0; i < targets.size(); i++) {
           gitianDescriptor = readYaml file: "contrib/gitian-descriptors/gitian-${target}.yml"
         }
         dir('gitian-builder') {
-          git url: 'https://github.com/trivechainpay/gitian-builder.git'
+          git url: 'https://github.com/trivechain/gitian-builder.git'
         }
         sh "mkdir -p trivechain-binaries"
         if (target == "osx") {
@@ -47,20 +47,20 @@ for(int i = 0; i < targets.size(); i++) {
 
         // restore cache
         try {
-          copyArtifacts(projectName: "trivechainpay-trivechain-gitian-nightly/${BRANCH_NAME}", optional: true, selector: lastSuccessful(), filter: "cache-${gitianDescriptor.name}.tar.gz")
+          copyArtifacts(projectName: "trivechain-trivechain-gitian-nightly/${BRANCH_NAME}", optional: true, selector: lastSuccessful(), filter: "cache-${gitianDescriptor.name}.tar.gz")
         } catch (Exception e) {
         }
         if (fileExists("cache-${gitianDescriptor.name}.tar.gz")) {
           hasCache = true
-          echo "Using cache from trivechainpay-trivechain-gitian-nightly/${BRANCH_NAME}"
+          echo "Using cache from trivechain-trivechain-gitian-nightly/${BRANCH_NAME}"
         } else {
           try {
-            copyArtifacts(projectName: 'trivechainpay-trivechain-gitian-nightly/develop', optional: true, selector: lastSuccessful(), filter: "cache-${gitianDescriptor.name}.tar.gz");
+            copyArtifacts(projectName: 'trivechain-trivechain-gitian-nightly/develop', optional: true, selector: lastSuccessful(), filter: "cache-${gitianDescriptor.name}.tar.gz");
           } catch (Exception e) {
           }
           if (fileExists("cache-${gitianDescriptor.name}.tar.gz")) {
             hasCache = true
-            echo "Using cache from trivechainpay-trivechain-gitian-nightly/develop"
+            echo "Using cache from trivechain-trivechain-gitian-nightly/develop"
           }
         }
       }
