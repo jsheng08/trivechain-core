@@ -34,6 +34,10 @@ ADD matrix.sh /tmp/matrix.sh
 RUN . /tmp/matrix.sh && \
   if [ -n "$DPKG_ADD_ARCH" ]; then dpkg --add-architecture "$DPKG_ADD_ARCH" ; fi && \
   if [ -n "$PACKAGES" ]; then apt-get update && apt-get install -y --no-install-recommends --no-upgrade $PACKAGES; fi
+ADD build_depends.sh /tmp/build_depends.sh
+RUN ./tmp/build_depends.sh
+ADD build_src.sh /tmp/build_src.sh
+RUN ./tmp/build_src.sh
 
 # Make sure std::thread and friends is available
 # Will fail on non-win builds, but we ignore this
