@@ -53,7 +53,6 @@ RUN mkdir /trivechain-src && \
   chown $USER_ID:$GROUP_ID /cache -R
 WORKDIR /trivechain-src
 
-cd ..
 RUN build_depends.sh && \
   build_src.sh
 
