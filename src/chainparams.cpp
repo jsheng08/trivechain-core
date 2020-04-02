@@ -276,10 +276,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nThreshold = 50; 
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000005f4b37398bb9e46c2"); // 463985
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000005f4ec84fea4acd76a"); // 694146
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0000000004bb95c07ce12675f74434eaeda033634f0ff84e25a3d26806eb670f"); //463985
+        consensus.defaultAssumeValid = uint256S("0x000000000245b0dc83cd117509af94d0196474d99f4215ed1924a93e1cf5b04d"); //694000
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -353,12 +353,11 @@ public:
             ( 350000, uint256S("0x00000000335cfe6e42e70756bd9925b927d38309caabf8ac67e969799cb24b42"))           
             ( 450000, uint256S("0x0000000003283dab0bc51f7616666e7885b58cdbb619221faebcb55b5fe7c46a"))           
             ( 463985, uint256S("0x0000000004bb95c07ce12675f74434eaeda033634f0ff84e25a3d26806eb670f"))
-            
+            ( 694000, uint256S("0x000000000245b0dc83cd117509af94d0196474d99f4215ed1924a93e1cf5b04d"))
         };
-
         chainTxData = ChainTxData{
-            1570955481, // * UNIX timestamp of last known number of transactions (Block 463985)
-            781311,     // * total number of transactions between genesis and that timestamp
+            1585821596, // * UNIX timestamp of last known number of transactions (Block 694000)
+            1205409,    // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
             0.01        // * estimated number of transactions per second after that timestamp
         };
