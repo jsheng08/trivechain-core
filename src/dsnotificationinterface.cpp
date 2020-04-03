@@ -1,17 +1,12 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "chainparams.h"
 #include "dsnotificationinterface.h"
-#include "instantx.h"
-#include "governance.h"
-#include "masternode-payments.h"
-#include "masternode-sync.h"
-#include "exclusivesend.h"
-#ifdef ENABLE_WALLET
-#include "exclusivesend-client.h"
-#endif // ENABLE_WALLET
+#include "governance/governance.h"
+#include "masternode/masternode-payments.h"
+#include "masternode/masternode-sync.h"
 #include "validation.h"
 
 #include "evo/deterministicmns.h"
@@ -25,7 +20,7 @@
 void CDSNotificationInterface::InitializeCurrentBlockTip()
 {
     LOCK(cs_main);
-    UpdatedBlockTip(chainActive.Tip(), NULL, IsInitialBlockDownload());
+    UpdatedBlockTip(chainActive.Tip(), nullptr, IsInitialBlockDownload());
 }
 
 void CDSNotificationInterface::AcceptedBlockHeader(const CBlockIndex *pindexNew)
@@ -50,8 +45,6 @@ void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
 
     // Update global DIP0001 activation status
     fDIP0001ActiveAtTip = pindexNew->nHeight >= Params().GetConsensus().DIP0001Height;
-    // update directsend autolock activation flag (we reuse the DIP3 deployment)
-    directsend.isAutoLockBip9Active = pindexNew->nHeight + 1 >= Params().GetConsensus().DIP0003Height;
 
     if (fInitialDownload)
         return;
@@ -62,33 +55,48 @@ void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
     llmq::quorumDirectSendManager->UpdatedBlockTip(pindexNew);
     llmq::chainLocksHandler->UpdatedBlockTip(pindexNew);
 
-    CExclusiveSend::UpdatedBlockTip(pindexNew);
-#ifdef ENABLE_WALLET
-    exclusiveSendClient.UpdatedBlockTip(pindexNew);
-#endif // ENABLE_WALLET
-    directsend.UpdatedBlockTip(pindexNew);
     governance.UpdatedBlockTip(pindexNew, connman);
     llmq::quorumManager->UpdatedBlockTip(pindexNew, fInitialDownload);
     llmq::quorumDKGSessionManager->UpdatedBlockTip(pindexNew, fInitialDownload);
 }
 
-void CDSNotificationInterface::SyncTransaction(const CTransaction &tx, const CBlockIndex *pindex, int posInBlock)
+void CDSNotificationInterface::TransactionAddedToMempool(const CTransactionRef& ptx, int64_t nAcceptTime)
 {
-    llmq::quorumDirectSendManager->SyncTransaction(tx, pindex, posInBlock);
-    llmq::chainLocksHandler->SyncTransaction(tx, pindex, posInBlock);
-    directsend.SyncTransaction(tx, pindex, posInBlock);
-    CExclusiveSend::SyncTransaction(tx, pindex, posInBlock);
+    llmq::quorumDirectSendManager->TransactionAddedToMempool(ptx);
+    llmq::chainLocksHandler->TransactionAddedToMempool(ptx, nAcceptTime);
+    CPrivateSend::TransactionAddedToMempool(ptx);
+}
+
+void CDSNotificationInterface::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted)
+{
+    // TODO: Tempoarily ensure that mempool removals are notified before
+    // connected transactions.  This shouldn't matter, but the abandoned
+    // state of transactions in our wallet is currently cleared when we
+    // receive another notification and there is a race condition where
+    // notification of a connected conflict might cause an outside process
+    // to abandon a transaction and then have it inadvertantly cleared by
+    // the notification that the conflicted transaction was evicted.
+
+    llmq::quorumDirectSendManager->BlockConnected(pblock, pindex, vtxConflicted);
+    llmq::chainLocksHandler->BlockConnected(pblock, pindex, vtxConflicted);
+    CPrivateSend::BlockConnected(pblock, pindex, vtxConflicted);
+}
+
+void CDSNotificationInterface::BlockDisconnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindexDisconnected)
+{
+    llmq::quorumDirectSendManager->BlockDisconnected(pblock, pindexDisconnected);
+    llmq::chainLocksHandler->BlockDisconnected(pblock, pindexDisconnected);
+    CPrivateSend::BlockDisconnected(pblock, pindexDisconnected);
 }
 
 void CDSNotificationInterface::NotifyMasternodeListChanged(bool undo, const CDeterministicMNList& oldMNList, const CDeterministicMNListDiff& diff)
 {
     CMNAuth::NotifyMasternodeListChanged(undo, oldMNList, diff);
-    governance.CheckMasternodeOrphanObjects(connman);
-    governance.CheckMasternodeOrphanVotes(connman);
     governance.UpdateCachesAndClean();
 }
 
-void CDSNotificationInterface::NotifyChainLock(const CBlockIndex* pindex)
+void CDSNotificationInterface::NotifyChainLock(const CBlockIndex* pindex, const llmq::CChainLockSig& clsig)
 {
     llmq::quorumDirectSendManager->NotifyChainLock(pindex);
+    CPrivateSend::NotifyChainLock(pindex);
 }

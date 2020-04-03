@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2018-2019 The Trivechain Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -162,7 +162,7 @@ void CDKGDebugManager::InitLocalSessionStatus(Consensus::LLMQType llmqType, cons
 
     auto it = localStatus.sessions.find(llmqType);
     if (it == localStatus.sessions.end()) {
-        it = localStatus.sessions.emplace((uint8_t)llmqType, CDKGDebugSessionStatus()).first;
+        it = localStatus.sessions.emplace(llmqType, CDKGDebugSessionStatus()).first;
     }
 
     auto& params = Params().GetConsensus().llmqs.at(llmqType);
@@ -174,14 +174,6 @@ void CDKGDebugManager::InitLocalSessionStatus(Consensus::LLMQType llmqType, cons
     session.statusBitset = 0;
     session.members.clear();
     session.members.resize((size_t)params.size);
-}
-
-void CDKGDebugManager::UpdateLocalStatus(std::function<bool(CDKGDebugStatus& status)>&& func)
-{
-    LOCK(cs);
-    if (func(localStatus)) {
-        localStatus.nTime = GetAdjustedTime();
-    }
 }
 
 void CDKGDebugManager::UpdateLocalSessionStatus(Consensus::LLMQType llmqType, std::function<bool(CDKGDebugSessionStatus& status)>&& func)
@@ -212,4 +204,4 @@ void CDKGDebugManager::UpdateLocalMemberStatus(Consensus::LLMQType llmqType, siz
     }
 }
 
-}
+} // namespace llmq

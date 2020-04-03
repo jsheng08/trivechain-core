@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2019 The Trivechain developers
+# Copyright (c) 2014-2018 The Trivechain Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -21,9 +21,9 @@ QT_TS = \
   qt/locale/trivechain_nl.ts \
   qt/locale/trivechain_pl.ts \
   qt/locale/trivechain_pt.ts \
+  qt/locale/trivechain_ro.ts \
   qt/locale/trivechain_ru.ts \
   qt/locale/trivechain_sk.ts \
-  qt/locale/trivechain_sv.ts \
   qt/locale/trivechain_th.ts \
   qt/locale/trivechain_tr.ts \
   qt/locale/trivechain_vi.ts \
@@ -60,6 +60,7 @@ QT_MOC_CPP = \
   qt/moc_bitcoinamountfield.cpp \
   qt/moc_bitcoingui.cpp \
   qt/moc_bitcoinunits.cpp \
+  qt/moc_callback.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
   qt/moc_coincontroltreewidget.cpp \
@@ -108,6 +109,7 @@ BITCOIN_MM = \
 QT_MOC = \
   qt/trivechain.moc \
   qt/bitcoinamountfield.moc \
+  qt/callback.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
@@ -130,6 +132,7 @@ BITCOIN_QT_H = \
   qt/bitcoinamountfield.h \
   qt/bitcoingui.h \
   qt/bitcoinunits.h \
+  qt/callback.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
@@ -180,65 +183,59 @@ BITCOIN_QT_H = \
   qt/winshutdownmonitor.h
 
 RES_ICONS = \
-  qt/res/icons/trvc.ico \
-  qt/res/icons/trvc_testnet.ico \
-  qt/res/icons/trvc.png \
+  qt/res/icons/bitcoin.ico \
+  qt/res/icons/bitcoin_testnet.ico \
+  qt/res/icons/bitcoin.png \
   qt/res/icons/chevron.png \
   qt/res/icons/warning.png \
-  qt/res/icons/trvc/add.png \
-  qt/res/icons/trvc/address-book.png \
-  qt/res/icons/trvc/browse.png \
-  qt/res/icons/trvc/clock1.png \
-  qt/res/icons/trvc/clock2.png \
-  qt/res/icons/trvc/clock3.png \
-  qt/res/icons/trvc/clock4.png \
-  qt/res/icons/trvc/clock5.png \
-  qt/res/icons/trvc/configure.png \
-  qt/res/icons/trvc/connect0_16.png \
-  qt/res/icons/trvc/connect1_16.png \
-  qt/res/icons/trvc/connect2_16.png \
-  qt/res/icons/trvc/connect3_16.png \
-  qt/res/icons/trvc/connect4_16.png \
-  qt/res/icons/trvc/debugwindow.png \
-  qt/res/icons/trvc/trvc_editpaste.png \
-  qt/res/icons/trvc/trvc_address-book.png \
-  qt/res/icons/trvc/trvc_editcopy.png \
-  qt/res/icons/trvc/trvc_remove.png \
-  qt/res/icons/trvc/edit.png \
-  qt/res/icons/trvc/editcopy.png \
-  qt/res/icons/trvc/editpaste.png \
-  qt/res/icons/trvc/export.png \
-  qt/res/icons/trvc/eye.png \
-  qt/res/icons/trvc/eye_minus.png \
-  qt/res/icons/trvc/eye_plus.png \
-  qt/res/icons/trvc/filesave.png \
-  qt/res/icons/trvc/hd_disabled.png \
-  qt/res/icons/trvc/hd_enabled.png \
-  qt/res/icons/trvc/history.png \
-  qt/res/icons/trvc/key.png \
-  qt/res/icons/trvc/lock_closed.png \
-  qt/res/icons/trvc/lock_open.png \
-  qt/res/icons/trvc/masternodes.png \
-  qt/res/icons/trvc/overview.png \
-  qt/res/icons/trvc/quit.png \
-  qt/res/icons/trvc/receive.png \
-  qt/res/icons/trvc/remove.png \
-  qt/res/icons/trvc/send.png \
-  qt/res/icons/trvc/synced.png \
-  qt/res/icons/trvc/transaction0.png \
-  qt/res/icons/trvc/transaction2.png \
-  qt/res/icons/trvc/transaction_abandoned.png \
-  qt/res/icons/trvc/transaction_conflicted.png \
-  qt/res/icons/trvc/tx_inout.png \
-  qt/res/icons/trvc/tx_input.png \
-  qt/res/icons/trvc/tx_output.png \
-  qt/res/icons/trvc/tx_mined.png \
-  qt/res/icons/trvc/about.png \
-  qt/res/icons/trvc/about_qt.png \
-  qt/res/icons/trvc/verify.png \
-  qt/res/icons/trvc/fontbigger.png \
-  qt/res/icons/trvc/fontsmaller.png \
-  qt/res/icons/trvc/network_disabled.png
+  qt/res/icons/add.png \
+  qt/res/icons/address-book.png \
+  qt/res/icons/browse.png \
+  qt/res/icons/clock1.png \
+  qt/res/icons/clock2.png \
+  qt/res/icons/clock3.png \
+  qt/res/icons/clock4.png \
+  qt/res/icons/clock5.png \
+  qt/res/icons/configure.png \
+  qt/res/icons/connect0_16.png \
+  qt/res/icons/connect1_16.png \
+  qt/res/icons/connect2_16.png \
+  qt/res/icons/connect3_16.png \
+  qt/res/icons/connect4_16.png \
+  qt/res/icons/console_remove.png \
+  qt/res/icons/debugwindow.png \
+  qt/res/icons/edit.png \
+  qt/res/icons/editcopy.png \
+  qt/res/icons/editpaste.png \
+  qt/res/icons/export.png \
+  qt/res/icons/eye.png \
+  qt/res/icons/eye_minus.png \
+  qt/res/icons/eye_plus.png \
+  qt/res/icons/filesave.png \
+  qt/res/icons/hd_disabled.png \
+  qt/res/icons/hd_enabled.png \
+  qt/res/icons/key.png \
+  qt/res/icons/lock_closed.png \
+  qt/res/icons/lock_open.png \
+  qt/res/icons/quit.png \
+  qt/res/icons/receive.png \
+  qt/res/icons/remove.png \
+  qt/res/icons/send.png \
+  qt/res/icons/synced.png \
+  qt/res/icons/transaction0.png \
+  qt/res/icons/transaction2.png \
+  qt/res/icons/transaction_conflicted.png \
+  qt/res/icons/tx_inout.png \
+  qt/res/icons/tx_input.png \
+  qt/res/icons/tx_output.png \
+  qt/res/icons/tx_mined.png \
+  qt/res/icons/about.png \
+  qt/res/icons/about_qt.png \
+  qt/res/icons/verify.png \
+  qt/res/icons/fontbigger.png \
+  qt/res/icons/fontsmaller.png \
+  qt/res/icons/transaction_abandoned.png \
+  qt/res/icons/network_disabled.png
 
 BITCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
@@ -306,22 +303,23 @@ BITCOIN_QT_CPP += $(BITCOIN_QT_WALLET_CPP)
 endif
 
 RES_IMAGES = \
-  qt/res/images/trvc/about.png \
-  qt/res/images/trvc/splash.png \
-  qt/res/images/trvc/splash_testnet.png \
-  qt/res/images/trvc/trivechain_logo_horizontal.png \
-  qt/res/images/trvc/unchecked.png \
-  qt/res/images/trvc/checked.png \
-  qt/res/images/trvc/trvc_downArrow.png \
-  qt/res/images/trvc/trvc_downArrow_small.png \
-  qt/res/images/trvc/trvc_upArrow_small.png \
-  qt/res/images/trvc/trvc_leftArrow_small.png \
-  qt/res/images/trvc/trvc_rightArrow_small.png \
-  qt/res/images/trvc/trvc_qtreeview_selected.png \
-  qt/res/images/trvc/trvc_walletFrame_bg.png
+  qt/res/images/arrow_down.png \
+  qt/res/images/arrow_down_small.png \
+  qt/res/images/arrow_left_small.png \
+  qt/res/images/arrow_right_small.png \
+  qt/res/images/arrow_up_small.png \
+  qt/res/images/checked.png \
+  qt/res/images/trivechain_logo_horizontal.png \
+  qt/res/images/trivechain_logo_toolbar.png \
+  qt/res/images/qtreeview_selected.png \
+  qt/res/images/splash.png \
+  qt/res/images/unchecked.png
 
 RES_CSS = \
-  qt/res/css/trvc.css
+  qt/res/css/dark.css \
+  qt/res/css/light.css \
+  qt/res/css/scrollbars.css \
+  qt/res/css/trad.css
 
 RES_MOVIES = $(wildcard $(srcdir)/qt/res/movies/spinner-*.png)
 
@@ -372,7 +370,7 @@ endif
 if ENABLE_ZMQ
 qt_trivechain_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
-qt_trivechain_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CONSENSUS) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
+qt_trivechain_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CONSENSUS) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
   $(BACKTRACE_LIB) $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(BLS_LIBS)
 qt_trivechain_qt_LDFLAGS = $(LDFLAGS_WRAP_EXCEPTIONS) $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)

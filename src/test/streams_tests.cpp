@@ -4,10 +4,9 @@
 
 #include "streams.h"
 #include "support/allocators/zeroafterfree.h"
-#include "test/test_trivechain.h"
+#include "test/test_dash.h"
 
 #include <boost/assign/std/vector.hpp> // for 'operator+=()'
-#include <boost/assert.hpp>
 #include <boost/test/unit_test.hpp>
 
 using namespace boost::assign; // bring 'operator+=()' into scope

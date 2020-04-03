@@ -11,6 +11,7 @@ src/trivechaind
 src/trivechain-cli
 src/trivechain-tx
 src/test/test_trivechain
+src/test/test_trivechain_fuzzy
 src/qt/test/test_trivechain-qt
 src/bench/bench_trivechain
 
@@ -50,7 +51,6 @@ src/qt/forms/ui_*.h
 src/qt/test/moc*.cpp
 libconftest.dylib*
 
-.trivechain
 .deps
 .dirstamp
 .libs
@@ -89,7 +89,6 @@ Trivechain-Qt.app
 # Unit-tests
 Makefile.test
 trivechain-qt_test
-src/test/buildenv.py
 
 # Resources cpp
 qrc_*.cpp
@@ -110,16 +109,15 @@ coverage_percent.txt
 linux-coverage-build
 linux-build
 win32-build
-qa/pull-tester/tests_config.py
-qa/pull-tester/tests_config.ini
-qa/cache/*
+test/config.ini
+test/cache/*
 
 !src/leveldb*/Makefile
 
 .cproject
 .project
 .autotools
-/doc/doxygen/
+/docs/doxygen/
 
 libtrivechainconsensus.pc
 contrib/devtools/split-debug.sh
@@ -137,4 +135,3 @@ make
 # CLion
 .idea
 cmake-build-debug
-.vscode/*

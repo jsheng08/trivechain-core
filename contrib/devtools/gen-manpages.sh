@@ -2,7 +2,7 @@
 
 TOPDIR=${TOPDIR:-$(git rev-parse --show-toplevel)}
 SRCDIR=${SRCDIR:-$TOPDIR/src}
-MANDIR=${MANDIR:-$TOPDIR/doc/man}
+MANDIR=${MANDIR:-$TOPDIR/docs/man}
 
 BITCOIND=${BITCOIND:-$SRCDIR/trivechaind}
 BITCOINCLI=${BITCOINCLI:-$SRCDIR/trivechain-cli}

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2019-2020 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +10,7 @@
 #include "chainparams.h"
 #include "coins.h"
 #include "txmempool.h"
-#include "masternode-sync.h"
+#include "masternode/masternode-sync.h"
 #include "net_processing.h"
 #include "spork.h"
 #include "validation.h"
@@ -18,9 +18,6 @@
 #ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #endif
-
-// needed for AUTO_IX_MEMPOOL_THRESHOLD
-#include "instantx.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
@@ -374,13 +371,13 @@ void CDirectSendManager::InterruptWorkerThread()
     workInterrupt();
 }
 
-bool CDirectSendManager::ProcessTx(const CTransaction& tx, const Consensus::Params& params)
+bool CDirectSendManager::ProcessTx(const CTransaction& tx, bool allowReSigning, const Consensus::Params& params)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return true;
     }
 
-    auto llmqType = params.llmqForDirectSend;
+    auto llmqType = params.llmqTypeDirectSend;
     if (llmqType == Consensus::LLMQ_NONE) {
         return true;
     }
@@ -405,11 +402,17 @@ bool CDirectSendManager::ProcessTx(const CTransaction& tx, const Consensus::Para
         g_connman->RelayInvFiltered(inv, tx, LLMQS_PROTO_VERSION);
     }
 
-    if (IsConflicted(tx)) {
+    if (!CheckCanLock(tx, true, params)) {
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: CheckCanLock returned false\n", __func__,
+                  tx.GetHash().ToString());
         return false;
     }
 
-    if (!CheckCanLock(tx, true, params)) {
+    auto conflictingLock = GetConflictingLock(tx);
+    if (conflictingLock) {
+        auto islockHash = ::SerializeHash(*conflictingLock);
+        LogPrintf("CDirectSendManager::%s -- txid=%s: conflicts with islock %s, txid=%s\n", __func__,
+                  tx.GetHash().ToString(), islockHash.ToString(), conflictingLock->txid.ToString());
         return false;
     }
 
@@ -424,7 +427,7 @@ bool CDirectSendManager::ProcessTx(const CTransaction& tx, const Consensus::Para
         uint256 otherTxHash;
         if (quorumSigningManager->GetVoteForId(llmqType, id, otherTxHash)) {
             if (otherTxHash != tx.GetHash()) {
-                LogPrintf("CDirectSendManager::%s -- txid=%s: input %s is conflicting with islock %s\n", __func__,
+                LogPrintf("CDirectSendManager::%s -- txid=%s: input %s is conflicting with previous vote for tx %s\n", __func__,
                          tx.GetHash().ToString(), in.prevout.ToStringShort(), otherTxHash.ToString());
                 return false;
             }
@@ -433,19 +436,28 @@ bool CDirectSendManager::ProcessTx(const CTransaction& tx, const Consensus::Para
 
         // don't even try the actual signing if any input is conflicting
         if (quorumSigningManager->IsConflicting(llmqType, id, tx.GetHash())) {
+            LogPrintf("CDirectSendManager::%s -- txid=%s: quorumSigningManager->IsConflicting returned true. id=%s\n", __func__,
+                     tx.GetHash().ToString(), id.ToString());
             return false;
         }
     }
-    if (alreadyVotedCount == ids.size()) {
+    if (!allowReSigning && alreadyVotedCount == ids.size()) {
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: already voted on all inputs, bailing out\n", __func__,
+                 tx.GetHash().ToString());
         return true;
     }
+
+    LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: trying to vote on %d inputs\n", __func__,
+             tx.GetHash().ToString(), tx.vin.size());
 
     for (size_t i = 0; i < tx.vin.size(); i++) {
         auto& in = tx.vin[i];
         auto& id = ids[i];
         inputRequestIds.emplace(id);
-        if (quorumSigningManager->AsyncSignIfMember(llmqType, id, tx.GetHash())) {
-            LogPrintf("CDirectSendManager::%s -- txid=%s: voted on input %s with id %s\n", __func__,
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: trying to vote on input %s with id %s. allowReSigning=%d\n", __func__,
+                 tx.GetHash().ToString(), in.prevout.ToStringShort(), id.ToString(), allowReSigning);
+        if (quorumSigningManager->AsyncSignIfMember(llmqType, id, tx.GetHash(), allowReSigning)) {
+            LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: voted on input %s with id %s\n", __func__,
                       tx.GetHash().ToString(), in.prevout.ToStringShort(), id.ToString());
         }
     }
@@ -464,27 +476,12 @@ bool CDirectSendManager::CheckCanLock(const CTransaction& tx, bool printDebug, c
         return false;
     }
 
-    CAmount nValueIn = 0;
     for (const auto& in : tx.vin) {
         CAmount v = 0;
         if (!CheckCanLock(in.prevout, printDebug, tx.GetHash(), &v, params)) {
             return false;
         }
-
-        nValueIn += v;
     }
-
-    // TODO decide if we should limit max input values. This was ok to do in the old system, but in the new system
-    // where we want to have all TXs locked at some point, this is counterproductive (especially when ChainLocks later
-    // depend on all TXs being locked first)
-//    CAmount maxValueIn = sporkManager.GetSporkValue(SPORK_5_DIRECTSEND_MAX_VALUE);
-//    if (nValueIn > maxValueIn * COIN) {
-//        if (printDebug) {
-//            LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: TX input value too high. nValueIn=%f, maxValueIn=%d", __func__,
-//                     tx.GetHash().ToString(), nValueIn / (double)COIN, maxValueIn);
-//        }
-//        return false;
-//    }
 
     return true;
 }
@@ -501,7 +498,7 @@ bool CDirectSendManager::CheckCanLock(const COutPoint& outpoint, bool printDebug
     auto mempoolTx = mempool.get(outpoint.hash);
     if (mempoolTx) {
         if (printDebug) {
-            LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: parent mempool TX %s is not locked\n", __func__,
+            LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: parent mempool TX %s is not locked\n", __func__,
                      txHash.ToString(), outpoint.hash.ToString());
         }
         return false;
@@ -512,7 +509,7 @@ bool CDirectSendManager::CheckCanLock(const COutPoint& outpoint, bool printDebug
     // this relies on enabled txindex and won't work if we ever try to remove the requirement for txindex for masternodes
     if (!GetTransaction(outpoint.hash, tx, params, hashBlock, false)) {
         if (printDebug) {
-            LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: failed to find parent TX %s\n", __func__,
+            LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: failed to find parent TX %s\n", __func__,
                      txHash.ToString(), outpoint.hash.ToString());
         }
         return false;
@@ -529,7 +526,7 @@ bool CDirectSendManager::CheckCanLock(const COutPoint& outpoint, bool printDebug
     if (nTxAge < nDirectSendConfirmationsRequired) {
         if (!llmq::chainLocksHandler->HasChainLock(pindexMined->nHeight, pindexMined->GetBlockHash())) {
             if (printDebug) {
-                LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: outpoint %s too new and not ChainLocked. nTxAge=%d, nDirectSendConfirmationsRequired=%d\n", __func__,
+                LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: outpoint %s too new and not ChainLocked. nTxAge=%d, nDirectSendConfirmationsRequired=%d\n", __func__,
                          txHash.ToString(), outpoint.ToStringShort(), nTxAge, nDirectSendConfirmationsRequired);
             }
             return false;
@@ -545,11 +542,11 @@ bool CDirectSendManager::CheckCanLock(const COutPoint& outpoint, bool printDebug
 
 void CDirectSendManager::HandleNewRecoveredSig(const CRecoveredSig& recoveredSig)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return;
     }
 
-    auto llmqType = Params().GetConsensus().llmqForDirectSend;
+    auto llmqType = Params().GetConsensus().llmqTypeDirectSend;
     if (llmqType == Consensus::LLMQ_NONE) {
         return;
     }
@@ -575,19 +572,17 @@ void CDirectSendManager::HandleNewRecoveredSig(const CRecoveredSig& recoveredSig
 
 void CDirectSendManager::HandleNewInputLockRecoveredSig(const CRecoveredSig& recoveredSig, const uint256& txid)
 {
-    auto llmqType = Params().GetConsensus().llmqForDirectSend;
-
     CTransactionRef tx;
     uint256 hashBlock;
     if (!GetTransaction(txid, tx, Params().GetConsensus(), hashBlock, true)) {
         return;
     }
 
-    if (LogAcceptCategory("directsend")) {
+    if (LogAcceptCategory(BCLog::DIRECTSEND)) {
         for (auto& in : tx->vin) {
             auto id = ::SerializeHash(std::make_pair(INPUTLOCK_REQUESTID_PREFIX, in.prevout));
             if (id == recoveredSig.id) {
-                LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: got recovered sig for input %s\n", __func__,
+                LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: got recovered sig for input %s\n", __func__,
                          txid.ToString(), in.prevout.ToStringShort());
                 break;
             }
@@ -599,7 +594,7 @@ void CDirectSendManager::HandleNewInputLockRecoveredSig(const CRecoveredSig& rec
 
 void CDirectSendManager::TrySignDirectSendLock(const CTransaction& tx)
 {
-    auto llmqType = Params().GetConsensus().llmqForDirectSend;
+    auto llmqType = Params().GetConsensus().llmqTypeDirectSend;
 
     for (auto& in : tx.vin) {
         auto id = ::SerializeHash(std::make_pair(INPUTLOCK_REQUESTID_PREFIX, in.prevout));
@@ -608,7 +603,7 @@ void CDirectSendManager::TrySignDirectSendLock(const CTransaction& tx)
         }
     }
 
-    LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: got all recovered sigs, creating CDirectSendLock\n", __func__,
+    LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: got all recovered sigs, creating CDirectSendLock\n", __func__,
             tx.GetHash().ToString());
 
     CDirectSendLock islock;
@@ -663,7 +658,7 @@ void CDirectSendManager::HandleNewDirectSendLockRecoveredSig(const llmq::CRecove
 
 void CDirectSendManager::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return;
     }
 
@@ -677,10 +672,10 @@ void CDirectSendManager::ProcessMessage(CNode* pfrom, const std::string& strComm
 void CDirectSendManager::ProcessMessageDirectSendLock(CNode* pfrom, const llmq::CDirectSendLock& islock, CConnman& connman)
 {
     bool ban = false;
-    if (!PreVerifyDirectSendLock(pfrom->id, islock, ban)) {
+    if (!PreVerifyDirectSendLock(pfrom->GetId(), islock, ban)) {
         if (ban) {
             LOCK(cs_main);
-            Misbehaving(pfrom->id, 100);
+            Misbehaving(pfrom->GetId(), 100);
         }
         return;
     }
@@ -695,10 +690,10 @@ void CDirectSendManager::ProcessMessageDirectSendLock(CNode* pfrom, const llmq::
         return;
     }
 
-    LogPrint("directsend", "CDirectSendManager::%s -- txid=%s, islock=%s: received islock, peer=%d\n", __func__,
-            islock.txid.ToString(), hash.ToString(), pfrom->id);
+    LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, islock=%s: received islock, peer=%d\n", __func__,
+            islock.txid.ToString(), hash.ToString(), pfrom->GetId());
 
-    pendingDirectSendLocks.emplace(hash, std::make_pair(pfrom->id, std::move(islock)));
+    pendingDirectSendLocks.emplace(hash, std::make_pair(pfrom->GetId(), std::move(islock)));
 }
 
 bool CDirectSendManager::PreVerifyDirectSendLock(NodeId nodeId, const llmq::CDirectSendLock& islock, bool& retBan)
@@ -734,7 +729,7 @@ bool CDirectSendManager::ProcessPendingDirectSendLocks()
         return false;
     }
 
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return false;
     }
 
@@ -744,7 +739,7 @@ bool CDirectSendManager::ProcessPendingDirectSendLocks()
         tipHeight = chainActive.Height();
     }
 
-    auto llmqType = Params().GetConsensus().llmqForDirectSend;
+    auto llmqType = Params().GetConsensus().llmqTypeDirectSend;
 
     // Every time a new quorum enters the active set, an older one is removed. This means that between two blocks, the
     // active set can be different, leading to different selection of the signing quorum. When we detect such rotation
@@ -780,7 +775,7 @@ bool CDirectSendManager::ProcessPendingDirectSendLocks()
 
 std::unordered_set<uint256> CDirectSendManager::ProcessPendingDirectSendLocks(int signHeight, const std::unordered_map<uint256, std::pair<NodeId, CDirectSendLock>>& pend, bool ban)
 {
-    auto llmqType = Params().GetConsensus().llmqForDirectSend;
+    auto llmqType = Params().GetConsensus().llmqTypeDirectSend;
 
     CBLSBatchVerifier<NodeId, uint256> batchVerifier(false, true, 8);
     std::unordered_map<uint256, std::pair<CQuorumCPtr, CRecoveredSig>> recSigs;
@@ -864,7 +859,7 @@ std::unordered_set<uint256> CDirectSendManager::ProcessPendingDirectSendLocks(in
             auto& recSig = it->second.second;
             if (!quorumSigningManager->HasRecoveredSigForId(llmqType, recSig.id)) {
                 recSig.UpdateHash();
-                LogPrint("directsend", "CDirectSendManager::%s -- txid=%s, islock=%s: passing reconstructed recSig to signing mgr, peer=%d\n", __func__,
+                LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, islock=%s: passing reconstructed recSig to signing mgr, peer=%d\n", __func__,
                          islock.txid.ToString(), hash.ToString(), nodeId);
                 quorumSigningManager->PushReconstructedRecoveredSig(recSig, quorum);
             }
@@ -895,7 +890,7 @@ void CDirectSendManager::ProcessDirectSendLock(NodeId from, const uint256& hash,
             // Let's see if the TX that was locked by this islock is already mined in a ChainLocked block. If yes,
             // we can simply ignore the islock, as the ChainLock implies locking of all TXs in that chain
             if (llmq::chainLocksHandler->HasChainLock(pindexMined->nHeight, pindexMined->GetBlockHash())) {
-                LogPrint("directsend", "CDirectSendManager::%s -- txlock=%s, islock=%s: dropping islock as it already got a ChainLock in block %s, peer=%d\n", __func__,
+                LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txlock=%s, islock=%s: dropping islock as it already got a ChainLock in block %s, peer=%d\n", __func__,
                          islock.txid.ToString(), hash.ToString(), hashBlock.ToString(), from);
                 return;
             }
@@ -905,7 +900,7 @@ void CDirectSendManager::ProcessDirectSendLock(NodeId from, const uint256& hash,
     {
         LOCK(cs);
 
-        LogPrint("directsend", "CDirectSendManager::%s -- txid=%s, islock=%s: processsing islock, peer=%d\n", __func__,
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, islock=%s: processsing islock, peer=%d\n", __func__,
                  islock.txid.ToString(), hash.ToString(), from);
 
         creatingDirectSendLocks.erase(islock.GetRequestId());
@@ -935,6 +930,10 @@ void CDirectSendManager::ProcessDirectSendLock(NodeId from, const uint256& hash,
 
         // This will also add children TXs to pendingRetryTxs
         RemoveNonLockedTx(islock.txid, true);
+
+        // We don't need the recovered sigs for the inputs anymore. This prevents unnecessary propagation of these sigs.
+        // We only need the ISLOCK from now on to detect conflicts
+        TruncateRecoveredSigsForInputs(islock);
     }
 
     CInv inv(MSG_ISLOCK, hash);
@@ -948,71 +947,39 @@ void CDirectSendManager::ProcessDirectSendLock(NodeId from, const uint256& hash,
 
     RemoveMempoolConflictsForLock(hash, islock);
     ResolveBlockConflicts(hash, islock);
-    UpdateWalletTransaction(islock.txid, tx);
+    UpdateWalletTransaction(tx, islock);
 }
 
-void CDirectSendManager::UpdateWalletTransaction(const uint256& txid, const CTransactionRef& tx)
+void CDirectSendManager::UpdateWalletTransaction(const CTransactionRef& tx, const CDirectSendLock& islock)
 {
-#ifdef ENABLE_WALLET
-    if (!pwalletMain) {
+    if (tx == nullptr) {
         return;
     }
 
-    if (pwalletMain->UpdatedTransaction(txid)) {
-        // notify an external script once threshold is reached
-        std::string strCmd = GetArg("-directsendnotify", "");
-        if (!strCmd.empty()) {
-            boost::replace_all(strCmd, "%s", txid.GetHex());
-            boost::thread t(runCommand, strCmd); // thread runs free
-        }
-    }
-#endif
-
-    if (tx) {
-        GetMainSignals().NotifyTransactionLock(*tx);
-        // bump mempool counter to make sure newly mined txes are picked up by getblocktemplate
-        mempool.AddTransactionsUpdated(1);
-    }
+    GetMainSignals().NotifyTransactionLock(*tx, islock);
+    // bump mempool counter to make sure newly mined txes are picked up by getblocktemplate
+    mempool.AddTransactionsUpdated(1);
 }
 
-void CDirectSendManager::SyncTransaction(const CTransaction& tx, const CBlockIndex* pindex, int posInBlock)
+void CDirectSendManager::ProcessNewTransaction(const CTransactionRef& tx, const CBlockIndex* pindex, bool allowReSigning)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return;
     }
 
-    if (tx.IsCoinBase() || tx.vin.empty()) {
-        // coinbase can't and TXs with no inputs be locked
-        return;
-    }
-
-    bool inMempool = mempool.get(tx.GetHash()) != nullptr;
-    bool isDisconnect = pindex && posInBlock == CMainSignals::SYNC_TRANSACTION_NOT_IN_BLOCK;
-
-    // Are we called from validation.cpp/MemPoolConflictRemovalTracker?
-    // TODO refactor this when we backport the BlockConnected signal from Bitcoin, as it gives better info about
-    // conflicted TXs
-    bool isConflictRemoved = isDisconnect && !inMempool;
-
-    if (isConflictRemoved) {
-        LOCK(cs);
-        RemoveConflictedTx(tx);
+    if (tx->IsCoinBase() || tx->vin.empty()) {
+        // coinbase and TXs with no inputs can't be locked
         return;
     }
 
     uint256 islockHash;
     {
         LOCK(cs);
-        islockHash = db.GetDirectSendLockHashByTxid(tx.GetHash());
+        islockHash = db.GetDirectSendLockHashByTxid(tx->GetHash());
 
         // update DB about when an IS lock was mined
         if (!islockHash.IsNull() && pindex) {
-            if (isDisconnect) {
-                // SyncTransaction is called with pprev
-                db.RemoveDirectSendLockMined(islockHash, pindex->nHeight + 1);
-            } else {
-                db.WriteDirectSendLockMined(islockHash, pindex->nHeight);
-            }
+            db.WriteDirectSendLockMined(islockHash, pindex->nHeight);
         }
     }
 
@@ -1022,25 +989,59 @@ void CDirectSendManager::SyncTransaction(const CTransaction& tx, const CBlockInd
 
     bool chainlocked = pindex && chainLocksHandler->HasChainLock(pindex->nHeight, pindex->GetBlockHash());
     if (islockHash.IsNull() && !chainlocked) {
-        ProcessTx(tx, Params().GetConsensus());
+        ProcessTx(*tx, allowReSigning, Params().GetConsensus());
     }
 
     LOCK(cs);
     if (!chainlocked && islockHash.IsNull()) {
         // TX is not locked, so make sure it is tracked
-        AddNonLockedTx(MakeTransactionRef(tx));
-        nonLockedTxs.at(tx.GetHash()).pindexMined = !isDisconnect ? pindex : nullptr;
+        AddNonLockedTx(tx, pindex);
     } else {
         // TX is locked, so make sure we don't track it anymore
-        RemoveNonLockedTx(tx.GetHash(), true);
+        RemoveNonLockedTx(tx->GetHash(), true);
     }
 }
 
-void CDirectSendManager::AddNonLockedTx(const CTransactionRef& tx)
+void CDirectSendManager::TransactionAddedToMempool(const CTransactionRef& tx)
+{
+    ProcessNewTransaction(tx, nullptr, false);
+}
+
+void CDirectSendManager::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted)
+{
+    if (!IsDirectSendEnabled()) {
+        return;
+    }
+
+    if (!vtxConflicted.empty()) {
+        LOCK(cs);
+        for (const auto& tx : vtxConflicted) {
+            RemoveConflictedTx(*tx);
+        }
+    }
+
+    for (const auto& tx : pblock->vtx) {
+        ProcessNewTransaction(tx, pindex, true);
+    }
+}
+
+void CDirectSendManager::BlockDisconnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindexDisconnected)
+{
+    LOCK(cs);
+    for (auto& tx : pblock->vtx) {
+        auto islockHash = db.GetDirectSendLockHashByTxid(tx->GetHash());
+        if (!islockHash.IsNull()) {
+            db.RemoveDirectSendLockMined(islockHash, pindexDisconnected->nHeight);
+        }
+    }
+}
+
+void CDirectSendManager::AddNonLockedTx(const CTransactionRef& tx, const CBlockIndex* pindexMined)
 {
     AssertLockHeld(cs);
     auto res = nonLockedTxs.emplace(tx->GetHash(), NonLockedTxInfo());
     auto& info = res.first->second;
+    info.pindexMined = pindexMined;
 
     if (!info.tx) {
         info.tx = tx;
@@ -1051,9 +1052,12 @@ void CDirectSendManager::AddNonLockedTx(const CTransactionRef& tx)
 
     if (res.second) {
         for (auto& in : tx->vin) {
-            nonLockedTxsByInputs.emplace(in.prevout.hash, std::make_pair(in.prevout.n, tx->GetHash()));
+            nonLockedTxsByOutpoints.emplace(in.prevout, tx->GetHash());
         }
     }
+
+    LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, pindexMined=%s\n", __func__,
+             tx->GetHash().ToString(), pindexMined ? pindexMined->GetBlockHash().ToString() : "");
 }
 
 void CDirectSendManager::RemoveNonLockedTx(const uint256& txid, bool retryChildren)
@@ -1066,10 +1070,12 @@ void CDirectSendManager::RemoveNonLockedTx(const uint256& txid, bool retryChildr
     }
     auto& info = it->second;
 
+    size_t retryChildrenCount = 0;
     if (retryChildren) {
         // TX got locked, so we can retry locking children
         for (auto& childTxid : info.children) {
             pendingRetryTxs.emplace(childTxid);
+            retryChildrenCount++;
         }
     }
 
@@ -1082,20 +1088,14 @@ void CDirectSendManager::RemoveNonLockedTx(const uint256& txid, bool retryChildr
                     nonLockedTxs.erase(jt);
                 }
             }
-
-            auto its = nonLockedTxsByInputs.equal_range(in.prevout.hash);
-            for (auto kt = its.first; kt != its.second; ) {
-                if (kt->second.first != in.prevout.n) {
-                    ++kt;
-                    continue;
-                } else {
-                    kt = nonLockedTxsByInputs.erase(kt);
-                }
-            }
+            nonLockedTxsByOutpoints.erase(in.prevout);
         }
     }
 
     nonLockedTxs.erase(it);
+
+    LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, retryChildren=%d, retryChildrenCount=%d\n", __func__,
+             txid.ToString(), retryChildren, retryChildrenCount);
 }
 
 void CDirectSendManager::RemoveConflictedTx(const CTransaction& tx)
@@ -1106,6 +1106,17 @@ void CDirectSendManager::RemoveConflictedTx(const CTransaction& tx)
     for (const auto& in : tx.vin) {
         auto inputRequestId = ::SerializeHash(std::make_pair(INPUTLOCK_REQUESTID_PREFIX, in));
         inputRequestIds.erase(inputRequestId);
+    }
+}
+
+void CDirectSendManager::TruncateRecoveredSigsForInputs(const llmq::CDirectSendLock& islock)
+{
+    auto& consensusParams = Params().GetConsensus();
+
+    for (auto& in : islock.inputs) {
+        auto inputRequestId = ::SerializeHash(std::make_pair(INPUTLOCK_REQUESTID_PREFIX, in));
+        inputRequestIds.erase(inputRequestId);
+        quorumSigningManager->TruncateRecoveredSig(consensusParams.llmqTypeDirectSend, inputRequestId);
     }
 }
 
@@ -1134,49 +1145,43 @@ void CDirectSendManager::UpdatedBlockTip(const CBlockIndex* pindexNew)
 
 void CDirectSendManager::HandleFullyConfirmedBlock(const CBlockIndex* pindex)
 {
+    LOCK(cs);
+
     auto& consensusParams = Params().GetConsensus();
 
-    std::unordered_map<uint256, CDirectSendLockPtr> removeISLocks;
-    {
-        LOCK(cs);
+    auto removeISLocks = db.RemoveConfirmedDirectSendLocks(pindex->nHeight);
 
-        removeISLocks = db.RemoveConfirmedDirectSendLocks(pindex->nHeight);
-        if (pindex->nHeight > 100) {
-            db.RemoveArchivedDirectSendLocks(pindex->nHeight - 100);
+    if (pindex->nHeight > 100) {
+        db.RemoveArchivedDirectSendLocks(pindex->nHeight - 100);
+    }
+    for (auto& p : removeISLocks) {
+        auto& islockHash = p.first;
+        auto& islock = p.second;
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s, islock=%s: removed islock as it got fully confirmed\n", __func__,
+                 islock->txid.ToString(), islockHash.ToString());
+
+        // No need to keep recovered sigs for fully confirmed IS locks, as there is no chance for conflicts
+        // from now on. All inputs are spent now and can't be spend in any other TX.
+        TruncateRecoveredSigsForInputs(*islock);
+
+        // And we don't need the recovered sig for the ISLOCK anymore, as the block in which it got mined is considered
+        // fully confirmed now
+        quorumSigningManager->TruncateRecoveredSig(consensusParams.llmqTypeDirectSend, islock->GetRequestId());
+    }
+
+    // Find all previously unlocked TXs that got locked by this fully confirmed (ChainLock) block and remove them
+    // from the nonLockedTxs map. Also collect all children of these TXs and mark them for retrying of IS locking.
+    std::vector<uint256> toRemove;
+    for (auto& p : nonLockedTxs) {
+        auto pindexMined = p.second.pindexMined;
+
+        if (pindexMined && pindex->GetAncestor(pindexMined->nHeight) == pindexMined) {
+            toRemove.emplace_back(p.first);
         }
-        for (auto& p : removeISLocks) {
-            auto& islockHash = p.first;
-            auto& islock = p.second;
-            LogPrint("directsend", "CDirectSendManager::%s -- txid=%s, islock=%s: removed islock as it got fully confirmed\n", __func__,
-                     islock->txid.ToString(), islockHash.ToString());
-
-            for (auto& in : islock->inputs) {
-                auto inputRequestId = ::SerializeHash(std::make_pair(INPUTLOCK_REQUESTID_PREFIX, in));
-                inputRequestIds.erase(inputRequestId);
-
-                // no need to keep recovered sigs for fully confirmed IS locks, as there is no chance for conflicts
-                // from now on. All inputs are spent now and can't be spend in any other TX.
-                quorumSigningManager->RemoveRecoveredSig(consensusParams.llmqForDirectSend, inputRequestId);
-            }
-
-            // same as in the loop
-            quorumSigningManager->RemoveRecoveredSig(consensusParams.llmqForDirectSend, islock->GetRequestId());
-        }
-
-        // Find all previously unlocked TXs that got locked by this fully confirmed (ChainLock) block and remove them
-        // from the nonLockedTxs map. Also collect all children of these TXs and mark them for retrying of IS locking.
-        std::vector<uint256> toRemove;
-        for (auto& p : nonLockedTxs) {
-            auto pindexMined = p.second.pindexMined;
-
-            if (pindexMined && pindex->GetAncestor(pindexMined->nHeight) == pindexMined) {
-                toRemove.emplace_back(p.first);
-            }
-        }
-        for (auto& txid : toRemove) {
-            // This will also add children to pendingRetryTxs
-            RemoveNonLockedTx(txid, true);
-        }
+    }
+    for (auto& txid : toRemove) {
+        // This will also add children to pendingRetryTxs
+        RemoveNonLockedTx(txid, true);
     }
 }
 
@@ -1223,12 +1228,9 @@ void CDirectSendManager::ResolveBlockConflicts(const uint256& islockHash, const 
     {
         LOCK(cs);
         for (auto& in : islock.inputs) {
-            auto its = nonLockedTxsByInputs.equal_range(in.hash);
-            for (auto it = its.first; it != its.second; ++it) {
-                if (it->second.first != in.n) {
-                    continue;
-                }
-                auto& conflictTxid = it->second.second;
+            auto it = nonLockedTxsByOutpoints.find(in);
+            if (it != nonLockedTxsByOutpoints.end()) {
+                auto& conflictTxid = it->second;
                 if (conflictTxid == islock.txid) {
                     continue;
                 }
@@ -1333,7 +1335,7 @@ void CDirectSendManager::AskNodesForLockedTx(const uint256& txid)
         LOCK(cs_main);
         for (CNode* pnode : nodesToAskFor) {
             LogPrintf("CDirectSendManager::%s -- txid=%s: asking other peer %d for correct TX\n", __func__,
-                      txid.ToString(), pnode->id);
+                      txid.ToString(), pnode->GetId());
 
             CInv inv(MSG_TX, txid);
             pnode->AskFor(inv);
@@ -1356,7 +1358,7 @@ bool CDirectSendManager::ProcessPendingRetryLockTxs()
         return false;
     }
 
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return false;
     }
 
@@ -1390,21 +1392,21 @@ bool CDirectSendManager::ProcessPendingRetryLockTxs()
 
         // CheckCanLock is already called by ProcessTx, so we should avoid calling it twice. But we also shouldn't spam
         // the logs when retrying TXs that are not ready yet.
-        if (LogAcceptCategory("directsend")) {
+        if (LogAcceptCategory(BCLog::DIRECTSEND)) {
             if (!CheckCanLock(*tx, false, Params().GetConsensus())) {
                 continue;
             }
-            LogPrint("directsend", "CDirectSendManager::%s -- txid=%s: retrying to lock\n", __func__,
+            LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- txid=%s: retrying to lock\n", __func__,
                      tx->GetHash().ToString());
         }
 
-        ProcessTx(*tx, Params().GetConsensus());
+        ProcessTx(*tx, false, Params().GetConsensus());
         retryCount++;
     }
 
     if (retryCount != 0) {
         LOCK(cs);
-        LogPrint("directsend", "CDirectSendManager::%s -- retried %d TXs. nonLockedTxs.size=%d\n", __func__,
+        LogPrint(BCLog::DIRECTSEND, "CDirectSendManager::%s -- retried %d TXs. nonLockedTxs.size=%d\n", __func__,
                  retryCount, nonLockedTxs.size());
     }
 
@@ -1413,7 +1415,7 @@ bool CDirectSendManager::ProcessPendingRetryLockTxs()
 
 bool CDirectSendManager::AlreadyHave(const CInv& inv)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return true;
     }
 
@@ -1423,7 +1425,7 @@ bool CDirectSendManager::AlreadyHave(const CInv& inv)
 
 bool CDirectSendManager::GetDirectSendLockByHash(const uint256& hash, llmq::CDirectSendLock& ret)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return false;
     }
 
@@ -1436,9 +1438,20 @@ bool CDirectSendManager::GetDirectSendLockByHash(const uint256& hash, llmq::CDir
     return true;
 }
 
+bool CDirectSendManager::GetDirectSendLockHashByTxid(const uint256& txid, uint256& ret)
+{
+    if (!IsDirectSendEnabled()) {
+        return false;
+    }
+
+    LOCK(cs);
+    ret = db.GetDirectSendLockHashByTxid(txid);
+    return !ret.IsNull();
+}
+
 bool CDirectSendManager::IsLocked(const uint256& txHash)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return false;
     }
 
@@ -1453,7 +1466,7 @@ bool CDirectSendManager::IsConflicted(const CTransaction& tx)
 
 CDirectSendLockPtr CDirectSendManager::GetConflictingLock(const CTransaction& tx)
 {
-    if (!IsNewDirectSendEnabled()) {
+    if (!IsDirectSendEnabled()) {
         return nullptr;
     }
 
@@ -1492,19 +1505,9 @@ void CDirectSendManager::WorkThreadMain()
     }
 }
 
-bool IsOldDirectSendEnabled()
-{
-    return sporkManager.IsSporkActive(SPORK_2_DIRECTSEND_ENABLED) && !sporkManager.IsSporkActive(SPORK_20_DIRECTSEND_LLMQ_BASED);
-}
-
-bool IsNewDirectSendEnabled()
-{
-    return sporkManager.IsSporkActive(SPORK_2_DIRECTSEND_ENABLED) && sporkManager.IsSporkActive(SPORK_20_DIRECTSEND_LLMQ_BASED);
-}
-
 bool IsDirectSendEnabled()
 {
     return sporkManager.IsSporkActive(SPORK_2_DIRECTSEND_ENABLED);
 }
 
-}
+} // namespace llmq

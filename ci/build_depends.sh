@@ -4,7 +4,7 @@
 
 set -e
 
-source ./matrix.sh
+source ./ci/matrix.sh
 
 unset CC; unset CXX
 unset DISPLAY

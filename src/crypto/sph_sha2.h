@@ -43,10 +43,6 @@
 #include <stddef.h>
 #include "sph_types.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 /**
  * Output size (in bits) for SHA-224.
  */
@@ -69,12 +65,12 @@ extern "C"{
  */
 typedef struct {
 #ifndef DOXYGEN_IGNORE
-	unsigned char buf[64];    /* first field, for alignment */
-	sph_u32 val[8];
+    unsigned char buf[64];    /* first field, for alignment */
+    sph_u32 val[8];
 #if SPH_64
-	sph_u64 count;
+    sph_u64 count;
 #else
-	sph_u32 count_high, count_low;
+    sph_u32 count_high, count_low;
 #endif
 #endif
 } sph_sha224_context;
@@ -233,9 +229,9 @@ void sph_sha256_comp(const sph_u32 msg[16], sph_u32 val[8]);
  */
 typedef struct {
 #ifndef DOXYGEN_IGNORE
-	unsigned char buf[128];    /* first field, for alignment */
-	sph_u64 val[8];
-	sph_u64 count;
+    unsigned char buf[128];    /* first field, for alignment */
+    sph_u64 val[8];
+    sph_u64 count;
 #endif
 } sph_sha384_context;
 
@@ -372,7 +368,5 @@ void sph_sha512_comp(const sph_u64 msg[16], sph_u64 val[8]);
 #endif
 
 #endif
-#ifdef __cplusplus
-}
-#endif
+
 

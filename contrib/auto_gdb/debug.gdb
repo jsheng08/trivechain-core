@@ -2,8 +2,6 @@ set pagination off
 source used_size.py
 source log_size.py
 source test_used_size.gdb
-#logsize exclusiveSendClient "memlog.txt"
-#logsize exclusiveSendServer "memlog.txt"
 #logsize mnodeman "memlog.txt"
 logsize mnpayments "memlog.txt"
 #logsize directsend "memlog.txt"

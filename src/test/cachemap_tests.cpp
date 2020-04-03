@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 
 #include "cachemap.h"
 

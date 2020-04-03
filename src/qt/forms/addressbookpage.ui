@@ -150,7 +150,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../trivechain.qrc"/>
+  <include location="../dash.qrc"/>
  </resources>
  <connections/>
 </ui>

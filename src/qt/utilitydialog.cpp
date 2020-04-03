@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/trivechain-config.h"
+#include "config/dash-config.h"
 #endif
 
 #include "utilitydialog.h"
@@ -14,6 +14,7 @@
 #include "bitcoingui.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
+#include "guiutil.h"
 #include "intro.h"
 #include "paymentrequestplus.h"
 #include "guiutil.h"
@@ -72,7 +73,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
     } else if (helpMode == cmdline) {
         setWindowTitle(tr("Command-line options"));
         QString header = tr("Usage:") + "\n" +
-            "  trivechain-qt [" + tr("command-line options") + "]                     " + "\n";
+            "  dash-qt [" + tr("command-line options") + "]                     " + "\n";
         QTextCursor cursor(ui->helpMessage->document());
         cursor.insertText(version);
         cursor.insertBlock();
@@ -80,7 +81,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         cursor.insertBlock();
 
         std::string strUsage = HelpMessage(HMM_BITCOIN_QT);
-        const bool showDebug = GetBoolArg("-help-debug", false);
+        const bool showDebug = gArgs.GetBoolArg("-help-debug", false);
         strUsage += HelpMessageGroup(tr("UI Options:").toStdString());
         if (showDebug) {
             strUsage += HelpMessageOpt("-allowselfsignedrootcertificates", strprintf("Allow self signed root certificates (default: %u)", DEFAULT_SELFSIGNED_ROOTCERTS));
@@ -108,7 +109,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
         QTextCharFormat bold;
         bold.setFontWeight(QFont::Bold);
 
-        Q_FOREACH (const QString &line, coreOptions.split("\n")) {
+        for (const QString &line : coreOptions.split("\n")) {
             if (line.startsWith("  -"))
             {
                 cursor.currentTable()->appendRows(1);
@@ -130,47 +131,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, HelpMode helpMode) :
 
         ui->helpMessage->moveCursor(QTextCursor::Start);
         ui->scrollArea->setVisible(false);
-        ui->aboutLogo->setVisible(false);
-    } else if (helpMode == pshelp) {
-        setWindowTitle(tr("ExclusiveSend information"));
-
-        ui->aboutMessage->setTextFormat(Qt::RichText);
-        ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        ui->aboutMessage->setText(tr("\
-<h3>ExclusiveSend Basics</h3> \
-ExclusiveSend gives you true financial privacy by obscuring the origins of your funds. \
-All the Trivechain in your wallet is comprised of different \"inputs\" which you can think of as separate, discrete coins.<br> \
-ExclusiveSend uses an innovative process to mix your inputs with the inputs of two other people, without having your coins ever leave your wallet. \
-You retain control of your money at all times.<hr> \
-<b>The ExclusiveSend process works like this:</b>\
-<ol type=\"1\"> \
-<li>ExclusiveSend begins by breaking your transaction inputs down into standard denominations. \
-These denominations are 0.001 TRVC, 0.01 TRVC, 0.1 TRVC, 1 TRVC and 10 TRVC -- sort of like the paper money you use every day.</li> \
-<li>Your wallet then sends requests to specially configured software nodes on the network, called \"masternodes.\" \
-These masternodes are informed then that you are interested in mixing a certain denomination. \
-No identifiable information is sent to the masternodes, so they never know \"who\" you are.</li> \
-<li>When two other people send similar messages, indicating that they wish to mix the same denomination, a mixing session begins. \
-The masternode mixes up the inputs and instructs all three users' wallets to pay the now-transformed input back to themselves. \
-Your wallet pays that denomination directly to itself, but in a different address (called a change address).</li> \
-<li>In order to fully obscure your funds, your wallet must repeat this process a number of times with each denomination. \
-Each time the process is completed, it's called a \"round.\" Each round of ExclusiveSend makes it exponentially more difficult to determine where your funds originated.</li> \
-<li>This mixing process happens in the background without any intervention on your part. When you wish to make a transaction, \
-your funds will already be anonymized. No additional waiting is required.</li> \
-</ol> <hr>\
-<b>IMPORTANT:</b> Your wallet only contains 1000 of these \"change addresses.\" Every time a mixing event happens, up to 9 of your addresses are used up. \
-This means those 1000 addresses last for about 100 mixing events. When 900 of them are used, your wallet must create more addresses. \
-It can only do this, however, if you have automatic backups enabled.<br> \
-Consequently, users who have backups disabled will also have ExclusiveSend disabled. <hr>\
-For more information, see the <a href=\"https://docs.trivechain.com/en/latest/wallets/trivechain/exclusivesend-directsend.html\">ExclusiveSend documentation</a>."
-        ));
-        ui->aboutMessage->setWordWrap(true);
-        ui->helpMessage->setVisible(false);
-        ui->aboutLogo->setVisible(false);
     }
-    // Theme dependent Gfx in About popup
-    QString helpMessageGfx = ":/images/" + GUIUtil::getThemeName() + "/about";
-    QPixmap pixmap = QPixmap(helpMessageGfx);
-    ui->aboutLogo->setPixmap(pixmap);
 }
 
 HelpMessageDialog::~HelpMessageDialog()
@@ -205,6 +166,11 @@ void HelpMessageDialog::on_okButton_accepted()
 ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
     QWidget(parent, f)
 {
+    setObjectName("ShutdownWindow");
+
+    /* Open CSS when configured */
+    this->setStyleSheet(GUIUtil::loadStyleSheet());
+
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
         tr("%1 is shutting down...").arg(tr(PACKAGE_NAME)) + "<br /><br />" +

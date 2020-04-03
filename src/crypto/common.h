@@ -1,13 +1,12 @@
-// Copyright (c) 2014-2018 The Bitcoin Core developers
-// Copyright (c) 2017 The Trivechain Core developers
+// Copyright (c) 2014 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef TRVC_CRYPTO_COMMON_H
-#define TRVC_CRYPTO_COMMON_H
+#ifndef BITCOIN_CRYPTO_COMMON_H
+#define BITCOIN_CRYPTO_COMMON_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/trivechain-config.h"
+#include "trivechain-config.h"
 #endif
 
 #include <stdint.h>
@@ -101,4 +100,4 @@ uint64_t static inline CountBits(uint64_t x)
     return ret;
 }
 
-#endif // TRVC_CRYPTO_COMMON_H
+#endif // BITCOIN_CRYPTO_COMMON_H

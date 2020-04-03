@@ -1,6 +1,6 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 
-#include "governance-validators.h"
+#include "governance/governance-validators.h"
 #include "utilstrencodings.h"
 
 #include "data/proposals_valid.json.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2018-2020 The Trivechain Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -107,6 +107,7 @@ private:
     CDKGSessionManager& dkgManager;
 
     QuorumPhase phase{QuorumPhase_Idle};
+    int currentHeight{-1};
     int quorumHeight{-1};
     uint256 quorumHash;
     std::shared_ptr<CDKGSession> curSession;
@@ -139,6 +140,6 @@ private:
     void PhaseHandlerThread();
 };
 
-}
+} // namespace llmq
 
 #endif //TRIVECHAIN_QUORUMS_DKGSESSIONHANDLER_H

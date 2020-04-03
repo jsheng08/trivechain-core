@@ -1,8 +1,8 @@
 Source: trivechain
 Section: utils
 Priority: optional
-Maintainer: Holger Schinzel <holger@trivechain.com>
-Uploaders: Holger Schinzel <holger@trivechain.com>
+Maintainer: Holger Schinzel <holger@dash.org>
+Uploaders: Holger Schinzel <holger@dash.org>
 Build-Depends: debhelper,
  devscripts,
  automake,
@@ -34,10 +34,10 @@ Package: trivechaind
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
- Trivechain is an experimental new digital currency that enables anonymous, instant
+ Trivechain is an experimental new digital currency that enables instant, private
  payments to anyone, anywhere in the world. Trivechain uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. Trivechain
+ and issuing money are carried out collectively by the network. Trivechain Core
  is the name of the open source software which enables the use of this currency.
  .
  This package provides the daemon, trivechaind, and the CLI tool
@@ -47,10 +47,10 @@ Package: trivechain-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
- Trivechain is an experimental new digital currency that enables anonymous, instant
+ Trivechain is an experimental new digital currency that enables instant, private
  payments to anyone, anywhere in the world. Trivechain uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. Trivechain
+ and issuing money are carried out collectively by the network. Trivechain Core
  is the name of the open source software which enables the use of this currency.
  .
  This package provides Trivechain-Qt, a GUI for Trivechain based on Qt.
@@ -59,10 +59,10 @@ Package: trivechain-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
- Trivechain is an experimental new digital currency that enables anonymous, instant
- payments to anyone, anywhere in the world. trivechain uses peer-to-peer
+ Trivechain is an experimental new digital currency that enables instant, private
+ payments to anyone, anywhere in the world. Trivechain uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. Trivechain
+ and issuing money are carried out collectively by the network. Trivechain Core
  is the name of the open source software which enables the use of this currency.
  .
  This package provides trivechain-tx, a command-line transaction creation

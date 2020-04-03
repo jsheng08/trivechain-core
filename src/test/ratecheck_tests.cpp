@@ -1,8 +1,8 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 
-#include "governance.h"
+#include "governance/governance.h"
 
-#include "test/test_trivechain.h"
+#include "test/test_dash.h"
 
 #include <boost/test/unit_test.hpp>
 

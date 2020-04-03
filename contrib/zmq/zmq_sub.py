@@ -7,9 +7,9 @@
     ZMQ example using python3's asyncio
 
     Trivechain should be started with the command line arguments:
-        trivechaind-testnet -daemon \
-                -zmqpubrawblock=tcp://127.0.0.1:28332 \
+        trivechaind -testnet -daemon \
                 -zmqpubrawtx=tcp://127.0.0.1:28332 \
+                -zmqpubrawblock=tcp://127.0.0.1:28332 \
                 -zmqpubhashtx=tcp://127.0.0.1:28332 \
                 -zmqpubhashblock=tcp://127.0.0.1:28332
 
@@ -51,8 +51,10 @@ class ZMQHandler():
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "hashdirectsenddoublespend")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawblock")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawchainlock")
+        self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawchainlocksig")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawtx")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawtxlock")
+        self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawtxlocksig")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawgovernancevote")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawgovernanceobject")
         self.zmqSubSocket.setsockopt_string(zmq.SUBSCRIBE, "rawdirectsenddoublespend")
@@ -95,11 +97,17 @@ class ZMQHandler():
         elif topic == b"rawchainlock":
             print('- RAW CHAINLOCK ('+sequence+') -')
             print(binascii.hexlify(body[:80]).decode("utf-8"))
+        elif topic == b"rawchainlocksig":
+            print('- RAW CHAINLOCK SIG ('+sequence+') -')
+            print(binascii.hexlify(body[:80]).decode("utf-8"))
         elif topic == b"rawtx":
             print('- RAW TX ('+sequence+') -')
             print(binascii.hexlify(body).decode("utf-8"))
         elif topic == b"rawtxlock":
             print('- RAW TX LOCK ('+sequence+') -')
+            print(binascii.hexlify(body).decode("utf-8"))
+        elif topic == b"rawtxlocksig":
+            print('- RAW TX LOCK SIG ('+sequence+') -')
             print(binascii.hexlify(body).decode("utf-8"))
         elif topic == b"rawgovernancevote":
             print('- RAW GOVERNANCE VOTE ('+sequence+') -')

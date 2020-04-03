@@ -35,18 +35,21 @@ struct BIP9Deployment {
     /** Timeout/expiry MedianTime for the deployment attempt. */
     int64_t nTimeout;
     /** The number of past blocks (including the block under consideration) to be taken into account for locking in a fork. */
-    int64_t nWindowSize;
+    int64_t nWindowSize{0};
     /** A number of blocks, in the range of 1..nWindowSize, which must signal for a fork in order to lock it in. */
-    int64_t nThreshold;
+    int64_t nThreshold{0};
 };
 
 enum LLMQType : uint8_t
 {
     LLMQ_NONE = 0xff,
 
-    LLMQ_5_60 = 1, // 5 members, 3 (60%) threshold, one per hour
-    LLMQ_40_60 = 2, // 40 members, 24 (60%) threshold, one every 12 hours
-    LLMQ_40_85 = 3, // 40 members, 34 (85%) threshold, one every 24 hours
+    LLMQ_25_60 = 1, // 50 members, 30 (60%) threshold, one per hour
+    LLMQ_100_60 = 2, // 400 members, 240 (60%) threshold, one every 12 hours
+    LLMQ_100_85 = 3, // 400 members, 340 (85%) threshold, one every 24 hours
+
+    // for testing only
+    LLMQ_5_60 = 100, // 5 members, 3 (60%) threshold, one per hour
 };
 
 // Configures a LLMQ and its DKG
@@ -122,8 +125,6 @@ struct Params {
     int nMasternodePaymentsIncreasePeriod; // in blocks
     int nDirectSendConfirmationsRequired; // in blocks
     int nDirectSendKeepLock; // in blocks
-    int nDirectSendSigsRequired;
-    int nDirectSendSigsTotal;
     int nBudgetPaymentsStartBlock;
     int nBudgetPaymentsCycleBlocks;
     int nBudgetPaymentsWindowBlocks;
@@ -163,6 +164,8 @@ struct Params {
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowTargetTimespan;
+    int nPowKGWHeight;
+    int nPowDGWHeight;
     int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
@@ -173,9 +176,14 @@ struct Params {
     int nHighSubsidyFactor{1};
 
     std::map<LLMQType, LLMQParams> llmqs;
-    LLMQType llmqChainLocks;
-    LLMQType llmqForDirectSend{LLMQ_NONE};
+    LLMQType llmqTypeChainLocks;
+    LLMQType llmqTypeDirectSend{LLMQ_NONE};
 };
 } // namespace Consensus
+
+// This must be outside of all namespaces. We must also duplicate the forward declaration of is_serializable_enum to
+// avoid inclusion of serialize.h here.
+template<typename T> struct is_serializable_enum;
+template<> struct is_serializable_enum<Consensus::LLMQType> : std::true_type {};
 
 #endif // BITCOIN_CONSENSUS_PARAMS_H

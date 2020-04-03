@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2018-2019 The Trivechain Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,7 +14,7 @@ private:
     std::string header;
     std::string msg;
 public:
-    CBatchedLogger(const std::string& _category, const std::string& _header);
+    CBatchedLogger(uint64_t _category, const std::string& _header);
     virtual ~CBatchedLogger();
 
     template<typename... Args>

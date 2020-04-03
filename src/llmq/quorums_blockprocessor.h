@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2018-2020 The Trivechain Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -66,6 +66,6 @@ private:
 
 extern CQuorumBlockProcessor* quorumBlockProcessor;
 
-}
+} // namespace llmq
 
 #endif//TRIVECHAIN_QUORUMS_BLOCKPROCESSOR_H

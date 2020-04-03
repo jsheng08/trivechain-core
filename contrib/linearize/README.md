@@ -11,7 +11,8 @@ https://github.com/trivechain/trivechain_hash
     $ ./linearize-hashes.py linearize.cfg > hashlist.txt
 
 Required configuration file settings for linearize-hashes:
-* RPC: `rpcuser`, `rpcpassword`
+* RPC: `datadir` (Required if `rpcuser` and `rpcpassword` are not specified)
+* RPC: `rpcuser`, `rpcpassword` (Required if `datadir` is not specified)
 
 Optional config file setting for linearize-hashes:
 * RPC: `host`  (Default: `127.0.0.1`)
@@ -42,7 +43,7 @@ will be printed.
 respectively, to the current time and to the timestamp of the most recent block
 written to the script's blockchain.
 * `genesis`: The hash of the genesis block in the blockchain. (default is '00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6', mainnet)
-* `input`: trivechain blocks/ directory containing blkNNNNN.dat
+* `input`: trivechaind blocks/ directory containing blkNNNNN.dat
 * `hashlist`: text file containing list of block hashes created by
 linearize-hashes.py.
 * `max_out_sz`: Maximum size for files created by the `output_file` option.

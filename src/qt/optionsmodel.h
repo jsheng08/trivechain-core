@@ -49,11 +49,11 @@ public:
         SpendZeroConfChange,    // bool
         ShowMasternodesTab,     // bool
         ShowAdvancedPSUI,       // bool
-        ShowExclusiveSendPopups,  // bool
+        ShowPrivateSendPopups,  // bool
         LowKeysWarning,         // bool
-        ExclusiveSendRounds,      // int
-        ExclusiveSendAmount,      // int
-        ExclusiveSendMultiSession,// bool
+        PrivateSendRounds,      // int
+        PrivateSendAmount,      // int
+        PrivateSendMultiSession,// bool
         Listen,                 // bool
         OptionIDRowCount,
     };
@@ -103,7 +103,7 @@ private:
     void checkAndMigrate();
 Q_SIGNALS:
     void displayUnitChanged(int unit);
-    void exclusiveSendRoundsChanged();
+    void privateSendRoundsChanged();
     void privateSentAmountChanged();
     void advancedPSUIChanged(bool);
     void coinControlFeaturesChanged(bool);

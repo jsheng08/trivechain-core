@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,9 +19,9 @@ BitcoinUnits::BitcoinUnits(QObject *parent):
 QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
 {
     QList<BitcoinUnits::Unit> unitlist;
-    unitlist.append(TRVC);
-    unitlist.append(mTRVC);
-    unitlist.append(uTRVC);
+    unitlist.append(TRIVECHAIN);
+    unitlist.append(mTRIVECHAIN);
+    unitlist.append(uTRIVECHAIN);
     unitlist.append(duffs);
     return unitlist;
 }
@@ -30,9 +30,9 @@ bool BitcoinUnits::valid(int unit)
 {
     switch(unit)
     {
-    case TRVC:
-    case mTRVC:
-    case uTRVC:
+    case TRIVECHAIN:
+    case mTRIVECHAIN:
+    case uTRIVECHAIN:
     case duffs:
         return true;
     default:
@@ -46,9 +46,9 @@ QString BitcoinUnits::name(int unit)
     {
         switch(unit)
         {
-            case TRVC: return QString("TRVC");
-            case mTRVC: return QString("mTRVC");
-            case uTRVC: return QString::fromUtf8("μTRVC");
+            case TRIVECHAIN: return QString("TRIVECHAIN");
+            case mTRIVECHAIN: return QString("mTRIVECHAIN");
+            case uTRIVECHAIN: return QString::fromUtf8("μTRIVECHAIN");
             case duffs: return QString("duffs");
             default: return QString("???");
         }
@@ -57,9 +57,9 @@ QString BitcoinUnits::name(int unit)
     {
         switch(unit)
         {
-            case TRVC: return QString("tTRVC");
-            case mTRVC: return QString("mtTRVC");
-            case uTRVC: return QString::fromUtf8("μtTRVC");
+            case TRIVECHAIN: return QString("tTRIVECHAIN");
+            case mTRIVECHAIN: return QString("mtTRIVECHAIN");
+            case uTRIVECHAIN: return QString::fromUtf8("μtTRIVECHAIN");
             case duffs: return QString("tduffs");
             default: return QString("???");
         }
@@ -72,9 +72,9 @@ QString BitcoinUnits::description(int unit)
     {
         switch(unit)
         {
-            case TRVC: return QString("Trivechain");
-            case mTRVC: return QString("Milli-Trivechain (1 / 1" THIN_SP_UTF8 "000)");
-            case uTRVC: return QString("Micro-Trivechain (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case TRIVECHAIN: return QString("Trivechain");
+            case mTRIVECHAIN: return QString("Milli-Trivechain (1 / 1" THIN_SP_UTF8 "000)");
+            case uTRIVECHAIN: return QString("Micro-Trivechain (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             case duffs: return QString("Ten Nano-Trivechain (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
@@ -83,9 +83,9 @@ QString BitcoinUnits::description(int unit)
     {
         switch(unit)
         {
-            case TRVC: return QString("TestTrivechains");
-            case mTRVC: return QString("Milli-TestTrivechain (1 / 1" THIN_SP_UTF8 "000)");
-            case uTRVC: return QString("Micro-TestTrivechain (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case TRIVECHAIN: return QString("TestTrivechains");
+            case mTRIVECHAIN: return QString("Milli-TestTrivechain (1 / 1" THIN_SP_UTF8 "000)");
+            case uTRIVECHAIN: return QString("Micro-TestTrivechain (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             case duffs: return QString("Ten Nano-TestTrivechain (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
@@ -96,9 +96,9 @@ qint64 BitcoinUnits::factor(int unit)
 {
     switch(unit)
     {
-    case TRVC:  return 100000000;
-    case mTRVC: return 100000;
-    case uTRVC: return 100;
+    case TRIVECHAIN:  return 100000000;
+    case mTRIVECHAIN: return 100000;
+    case uTRIVECHAIN: return 100;
     case duffs: return 1;
     default:   return 100000000;
     }
@@ -108,9 +108,9 @@ int BitcoinUnits::decimals(int unit)
 {
     switch(unit)
     {
-    case TRVC: return 8;
-    case mTRVC: return 5;
-    case uTRVC: return 2;
+    case TRIVECHAIN: return 8;
+    case mTRIVECHAIN: return 5;
+    case uTRIVECHAIN: return 2;
     case duffs: return 0;
     default: return 0;
     }

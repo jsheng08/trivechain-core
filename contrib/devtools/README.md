@@ -23,7 +23,7 @@ git diff -U0 HEAD~1.. | ./contrib/devtools/clang-format-diff.py -p1 -i -v
 copyright\_header.py
 ====================
 
-Provides utilities for managing copyright headers of `The Trivechain
+Provides utilities for managing copyright headers of `The Trivechain Core
 developers` in repository source files. It has three subcommands:
 
 ```
@@ -42,31 +42,31 @@ Specifying `verbose` will list the full filenames of files of each category.
 
 copyright\_header.py update \<base\_directory\> [verbose]
 ---------------------------------------------------------
-Updates all the copyright headers of `The Trivechain developers` which were
+Updates all the copyright headers of `The Trivechain Core developers` which were
 changed in a year more recent than is listed. For example:
 ```
-// Copyright (c) <firstYear>-<lastYear> The Trivechain developers
+// Copyright (c) <firstYear>-<lastYear> The Trivechain Core developers
 ```
 will be updated to:
 ```
-// Copyright (c) <firstYear>-<lastModifiedYear> The Trivechain developers
+// Copyright (c) <firstYear>-<lastModifiedYear> The Trivechain Core developers
 ```
 where `<lastModifiedYear>` is obtained from the `git log` history.
 
 This subcommand also handles copyright headers that have only a single year. In
 those cases:
 ```
-// Copyright (c) <year> The Trivechain developers
+// Copyright (c) <year> The Trivechain Core developers
 ```
 will be updated to:
 ```
-// Copyright (c) <year>-<lastModifiedYear> The Trivechain developers
+// Copyright (c) <year>-<lastModifiedYear> The Trivechain Core developers
 ```
 where the update is appropriate.
 
 copyright\_header.py insert \<file\>
 ------------------------------------
-Inserts a copyright header for `The Trivechain developers` at the top of the
+Inserts a copyright header for `The Trivechain Core developers` at the top of the
 file in either Python or C++ style as determined by the file extension. If the
 file is a Python file and it has  `#!` starting the first line, the header is
 inserted in the line below it.
@@ -76,13 +76,13 @@ The copyright dates will be set to be `<year_introduced>-<current_year>` where
 `<year_introduced>` is equal to `<current_year>`, it will be set as a single
 year rather than two hyphenated years.
 
-If the file already has a copyright for `The Trivechain developers`, the
+If the file already has a copyright for `The Trivechain Core developers`, the
 script will exit.
 
 gen-manpages.sh
 ===============
 
-A small script to automatically create manpages in ../../doc/man by running the release binaries with the -help option.
+A small script to automatically create manpages in ../../docs/man by running the release binaries with the -help option.
 This requires help2man which can be found at: https://www.gnu.org/software/help2man/
 
 git-subtree-check.sh
@@ -112,7 +112,7 @@ For example:
   ./github-merge.py 3077
 
 (in any git repository) will help you merge pull request #3077 for the
-bitcoin/bitcoin repository.
+trivechain/trivechain-core repository.
 
 What it does:
 * Fetch master and the pull request.
@@ -132,14 +132,14 @@ Setup
 ---------
 Configuring the github-merge tool for the bitcoin repository is done in the following way:
 
-    git config githubmerge.repository bitcoin/bitcoin
+    git config githubmerge.repository trivechain/trivechain-core
     git config githubmerge.testcmd "make -j4 check" (adapt to whatever you want to use for testing)
     git config --global user.signingkey mykeyid (if you want to GPG sign)
 
 optimize-pngs.py
 ================
 
-A script to optimize png files in the bitcoin
+A script to optimize png files in the trivechain
 repository (requires pngcrush).
 
 security-check.py and test-security-check.py
@@ -177,4 +177,4 @@ It will do the following automatically:
 - post-process them into valid and committable format
 - add missing translations to the build system (TODO)
 
-See doc/translation-process.md for more information.
+See docs/translation-process.md for more information.

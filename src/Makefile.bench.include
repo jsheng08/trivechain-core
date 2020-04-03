@@ -1,5 +1,5 @@
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2019 The Trivechain developers
+# Copyright (c) 2014-2018 The Trivechain Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,14 +22,18 @@ bench_bench_trivechain_SOURCES = \
   bench/ecdsa.cpp \
   bench/Examples.cpp \
   bench/rollingbloom.cpp \
+  bench/chacha20.cpp \
+  bench/chacha_poly_aead.cpp \
   bench/crypto_hash.cpp \
   bench/ccoins_caching.cpp \
+  bench/merkle_root.cpp \
   bench/mempool_eviction.cpp \
   bench/base58.cpp \
   bench/lockedpool.cpp \
+  bench/poly1305.cpp \
   bench/perf.cpp \
   bench/perf.h \
-  bench/prevector_destructor.cpp \
+  bench/prevector.cpp \
   bench/string_cast.cpp
 
 nodist_bench_bench_trivechain_SOURCES = $(GENERATED_TEST_FILES)
@@ -43,6 +47,7 @@ bench_bench_trivechain_LDADD = \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBLEVELDB) \
+  $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1) \
   $(LIBUNIVALUE)

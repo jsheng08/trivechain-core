@@ -38,7 +38,7 @@ public:
     void showOutOfSyncWarning(bool fShow);
 
 public Q_SLOTS:
-    void exclusiveSendStatus();
+    void privateSendStatus();
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& anonymizedBalance,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
@@ -66,15 +66,12 @@ private:
     std::unique_ptr<TransactionFilterProxy> filter;
 
     void SetupTransactionList(int nNumItems);
-    void DisableExclusiveSendCompletely();
+    void DisablePrivateSendCompletely();
 
 private Q_SLOTS:
-    void toggleExclusiveSend();
-    void exclusiveSendAuto();
-    void exclusiveSendReset();
-    void exclusiveSendInfo();
+    void togglePrivateSend();
     void updateDisplayUnit();
-    void updateExclusiveSendProgress();
+    void updatePrivateSendProgress();
     void updateAdvancedPSUI(bool fShowAdvancedPSUI);
     void handleTransactionClicked(const QModelIndex &index);
     void updateAlerts(const QString &warnings);

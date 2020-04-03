@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 #ifndef TRIVECHAIN_HDCHAIN_H
 #define TRIVECHAIN_HDCHAIN_H

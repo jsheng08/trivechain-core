@@ -68,7 +68,7 @@ def split_format_specifiers(specifiers):
             other.append(s)
 
     # If both numeric format specifiers and "others" are used, assume we're dealing
-    # with a Qt-formatted message. In the case of Qt formatting (see https://doc.qt.io/qt-5/qstring.html#arg)
+    # with a Qt-formatted message. In the case of Qt formatting (see https://docs.qt.io/qt-5/qstring.html#arg)
     # only numeric formats are replaced at all. This means "(percentage: %1%)" is valid, without needing
     # any kind of escaping that would be necessary for strprintf. Without this, this function
     # would wrongly detect '%)' as a printf format specifier.

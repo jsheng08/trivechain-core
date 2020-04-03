@@ -1,11 +1,10 @@
 <!--- Remove sections that do not apply -->
 
-This issue tracker is only for technical issues related to Trivechain.
+This issue tracker is only for technical issues related to Trivechain Core.
 
-General Trivechain questions and/or support requests and are best directed to the [Trivechain Reddit](https://www.reddit.com/r/trivechain/).
+General Trivechain questions and/or support requests and are best directed to the [Trivechain Discord](https://discord.gg/jhbaf5E).
 
-To report critical security issues, email infosec@trivechain.com and/or see the TRIVECHAIN bug bounty program on [Bugcrowd](https://bugcrowd.com/trivechaindigitalcash) instead of creating Github issues.
-
+To report critical security issues, email support@trivechain.com
 ### Describe the issue
 
 ### Can you reliably reproduce the issue?
@@ -23,7 +22,7 @@ Tell us what happens instead
 ### Screenshots.
 If the issue is related to the GUI, screenshots can be added to this issue via drag & drop.
 
-### What version of Trivechain are you using?
+### What version of Trivechain Core are you using?
 List the version number/commit ID, and if it is an official binary, self compiled or a distribution package such as PPA.
 
 ### Machine specs:

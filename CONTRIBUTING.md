@@ -1,7 +1,7 @@
-Contributing to Trivechain
+Contributing to Trivechain Core
 ============================
 
-The Trivechain project operates an open contributor model where anyone is
+The Trivechain Core project operates an open contributor model where anyone is
 welcome to contribute towards development in the form of peer review, testing
 and patches. This document explains the practical process and guidelines for
 contributing.
@@ -28,7 +28,7 @@ To contribute a patch, the workflow is as follows:
   - Create topic branch
   - Commit patches
 
-The project coding conventions in the [developer notes](doc/developer-notes.md)
+The project coding conventions in the [developer notes](docs/developer-notes.md)
 must be adhered to.
 
 In general [commits should be atomic](https://en.wikipedia.org/wiki/Atomic_commit#Atomic_commit_convention)
@@ -37,8 +37,8 @@ fixes or code moves with actual code changes.
 
 Commit messages should be verbose by default consisting of a short subject line
 (50 chars max), a blank line and detailed explanatory text as separate
-paragraph(s); unless the title alone is self-explanatory (like "Corrected typo
-in init.cpp") then a single title line is sufficient. Commit messages should be
+paragraph(s), unless the title alone is self-explanatory (like "Corrected typo
+in init.cpp") in which case a single title line is sufficient. Commit messages should be
 helpful to people reading your code in the future, so explain the reasoning for
 your decisions. Further explanation [here](http://chris.beams.io/posts/git-commit/).
 
@@ -46,7 +46,7 @@ If a particular commit references another issue, please add the reference, for
 example `refs #1234`, or `fixes #4321`. Using the `fixes` or `closes` keywords
 will cause the corresponding issue to be closed when the pull request is merged.
 
-Please refer to the [Git manual](https://git-scm.com/doc) for more information
+Please refer to the [Git manual](https://git-scm.com/docs) for more information
 about Git.
 
   - Push changes to your fork
@@ -157,11 +157,11 @@ where possible keep them short, uncomplex and easy to verify.
 "Decision Making" Process
 -------------------------
 
-The following applies to code changes to the Trivechain project (and related
+The following applies to code changes to the Trivechain Core project (and related
 projects such as libsecp256k1), and is not to be confused with overall Trivechain
 Network Protocol consensus changes.
 
-Whether a pull request is merged into Trivechain rests with the project merge
+Whether a pull request is merged into Trivechain Core rests with the project merge
 maintainers and ultimately the project lead.
 
 Maintainers will take into consideration if a patch is in line with the general
@@ -170,13 +170,13 @@ judge the general consensus of contributors.
 
 In general, all pull requests must:
 
-  - have a clear use case, fix a demonstrable bug or serve the greater good of
+  - Have a clear use case, fix a demonstrable bug or serve the greater good of
     the project (for example refactoring for modularisation);
-  - be well peer reviewed;
-  - have unit tests and functional tests where appropriate;
-  - follow [code style guidelines](/doc/developer-notes.md);
-  - not break the existing test suite;
-  - where bugs are fixed, where possible, there should be unit tests
+  - Be well peer reviewed;
+  - Have unit tests and functional tests where appropriate;
+  - Follow [code style guidelines](/docs/developer-notes.md);
+  - Not break the existing test suite;
+  - Where bugs are fixed, where possible, there should be unit tests
     demonstrating the bug and also proving the fix. This helps prevent regression.
 
 Patches that change Trivechain consensus rules are considerably more involved than
@@ -225,11 +225,41 @@ discussed extensively on the mailing list and IRC, be accompanied by a widely
 discussed BIP and have a generally widely perceived technical consensus of being
 a worthwhile change based on the judgement of the maintainers.
 
+### Finding Reviewers
+
+The review process is normally fairly responsive on the Trivechain Core repository, however
+this might not always be the case. If you find that you've been waiting
+for a pull request to be given attention for several months, there may be a number
+of reasons for this, some of which you can do something about:
+
+  - It may be because of a feature freeze due to an upcoming release. During this time,
+    only bug fixes are taken into consideration. If your pull request is a new feature,
+    it will not be prioritized until the release is over. Wait for release.
+  - It may be because the changes you are suggesting do not appeal to people. Rather than
+    nits and critique, which require effort and means they care enough to spend time on your
+    contribution, thundering silence is a good sign of widespread (mild) dislike of a given change
+    (because people don't assume *others* won't actually like the proposal). Don't take
+    that personally, though! Instead, take another critical look at what you are suggesting
+    and see if it: changes too much, is too broad, doesn't adhere to the
+    [developer notes](docs/developer-notes.md), is dangerous or insecure, is messily written, etc.
+    Identify and address any of the issues you find. Then ask e.g. on the forum or on a community
+    discord if someone could give their opinion on the concept itself.
+  - It may be because your code is too complex for all but a few people. And those people
+    may not have realized your pull request even exists. A great way to find people who
+    are qualified and care about the code you are touching is the
+    [Git Blame feature](https://help.github.com/articles/tracing-changes-in-a-file/). Simply
+    find the person touching the code you are touching before you and see if you can find
+    them and give them a nudge. Don't be incessant about the nudging though.
+  - Finally, if all else fails, ask on discord or elsewhere for someone to give your pull request
+    a look. If you think you've been waiting an unreasonably long amount of time (month+) for
+    no particular reason (few lines changed, etc), this is totally fine. Try to return the favor
+    when someone else is asking for feedback on their code, and universe balances out.
+
 
 Release Policy
 --------------
 
-The project leader is the release manager for each Trivechain release.
+The project leader is the release manager for each Trivechain Core release.
 
 Copyright
 ---------

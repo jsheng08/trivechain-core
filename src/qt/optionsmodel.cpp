@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2014-2019 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/trivechain-config.h"
+#include "config/dash-config.h"
 #endif
 
 #include "optionsmodel.h"
@@ -22,8 +22,6 @@
 #ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
-
-#include "exclusivesend-client.h"
 #endif
 
 #include <QNetworkProxy>
@@ -38,7 +36,7 @@ OptionsModel::OptionsModel(QObject *parent, bool resetSettings) :
 
 void OptionsModel::addOverriddenOption(const std::string &option)
 {
-    strOverriddenByCommandLine += QString::fromStdString(option) + "=" + QString::fromStdString(GetArg(option, "")) + " ";
+    strOverriddenByCommandLine += QString::fromStdString(option) + "=" + QString::fromStdString(gArgs.GetArg(option, "")) + " ";
 }
 
 // Writes all missing QSettings with their default values
@@ -74,7 +72,7 @@ void OptionsModel::Init(bool resetSettings)
 
     // Display
     if (!settings.contains("nDisplayUnit"))
-        settings.setValue("nDisplayUnit", BitcoinUnits::TRVC);
+        settings.setValue("nDisplayUnit", BitcoinUnits::TRIVECHAIN);
     nDisplayUnit = settings.value("nDisplayUnit").toInt();
 
     if (!settings.contains("strThirdPartyTxUrls"))
@@ -92,13 +90,13 @@ void OptionsModel::Init(bool resetSettings)
     if (!settings.contains("digits"))
         settings.setValue("digits", "2");
 
-    // ExclusiveSend
+    // PrivateSend
     if (!settings.contains("fShowAdvancedPSUI"))
         settings.setValue("fShowAdvancedPSUI", false);
     fShowAdvancedPSUI = settings.value("fShowAdvancedPSUI", false).toBool();
 
-    if (!settings.contains("fShowExclusiveSendPopups"))
-        settings.setValue("fShowExclusiveSendPopups", true);
+    if (!settings.contains("fShowPrivateSendPopups"))
+        settings.setValue("fShowPrivateSendPopups", true);
 
     if (!settings.contains("fLowKeysWarning"))
         settings.setValue("fLowKeysWarning", true);
@@ -109,61 +107,37 @@ void OptionsModel::Init(bool resetSettings)
     //
     // If setting doesn't exist create it with defaults.
     //
-    // If SoftSetArg() or SoftSetBoolArg() return false we were overridden
+    // If gArgs.SoftSetArg() or gArgs.SoftSetBoolArg() return false we were overridden
     // by command-line and show this in the UI.
 
     // Main
     if (!settings.contains("nDatabaseCache"))
         settings.setValue("nDatabaseCache", (qint64)nDefaultDbCache);
-    if (!SoftSetArg("-dbcache", settings.value("nDatabaseCache").toString().toStdString()))
+    if (!gArgs.SoftSetArg("-dbcache", settings.value("nDatabaseCache").toString().toStdString()))
         addOverriddenOption("-dbcache");
 
     if (!settings.contains("nThreadsScriptVerif"))
         settings.setValue("nThreadsScriptVerif", DEFAULT_SCRIPTCHECK_THREADS);
-    if (!SoftSetArg("-par", settings.value("nThreadsScriptVerif").toString().toStdString()))
+    if (!gArgs.SoftSetArg("-par", settings.value("nThreadsScriptVerif").toString().toStdString()))
         addOverriddenOption("-par");
 
     // Wallet
 #ifdef ENABLE_WALLET
     if (!settings.contains("bSpendZeroConfChange"))
         settings.setValue("bSpendZeroConfChange", true);
-    if (!SoftSetBoolArg("-spendzeroconfchange", settings.value("bSpendZeroConfChange").toBool()))
+    if (!gArgs.SoftSetBoolArg("-spendzeroconfchange", settings.value("bSpendZeroConfChange").toBool()))
         addOverriddenOption("-spendzeroconfchange");
-
-    // ExclusiveSend
-    if (!settings.contains("nExclusiveSendRounds"))
-        settings.setValue("nExclusiveSendRounds", DEFAULT_EXCLUSIVESEND_ROUNDS);
-    if (!SoftSetArg("-exclusivesendrounds", settings.value("nExclusiveSendRounds").toString().toStdString()))
-        addOverriddenOption("-exclusivesendrounds");
-    exclusiveSendClient.nExclusiveSendRounds = settings.value("nExclusiveSendRounds").toInt();
-
-    if (!settings.contains("nExclusiveSendAmount")) {
-        // for migration from old settings
-        if (!settings.contains("nAnonymizeTrivechainAmount"))
-            settings.setValue("nExclusiveSendAmount", DEFAULT_EXCLUSIVESEND_AMOUNT);
-        else
-            settings.setValue("nExclusiveSendAmount", settings.value("nAnonymizeTrivechainAmount").toInt());
-    }
-    if (!SoftSetArg("-exclusivesendamount", settings.value("nExclusiveSendAmount").toString().toStdString()))
-        addOverriddenOption("-exclusivesendamount");
-    exclusiveSendClient.nExclusiveSendAmount = settings.value("nExclusiveSendAmount").toInt();
-
-    if (!settings.contains("fExclusiveSendMultiSession"))
-        settings.setValue("fExclusiveSendMultiSession", DEFAULT_EXCLUSIVESEND_MULTISESSION);
-    if (!SoftSetBoolArg("-exclusivesendmultisession", settings.value("fExclusiveSendMultiSession").toBool()))
-        addOverriddenOption("-exclusivesendmultisession");
-    exclusiveSendClient.fExclusiveSendMultiSession = settings.value("fExclusiveSendMultiSession").toBool();
 #endif
 
     // Network
     if (!settings.contains("fUseUPnP"))
         settings.setValue("fUseUPnP", DEFAULT_UPNP);
-    if (!SoftSetBoolArg("-upnp", settings.value("fUseUPnP").toBool()))
+    if (!gArgs.SoftSetBoolArg("-upnp", settings.value("fUseUPnP").toBool()))
         addOverriddenOption("-upnp");
 
     if (!settings.contains("fListen"))
         settings.setValue("fListen", DEFAULT_LISTEN);
-    if (!SoftSetBoolArg("-listen", settings.value("fListen").toBool()))
+    if (!gArgs.SoftSetBoolArg("-listen", settings.value("fListen").toBool()))
         addOverriddenOption("-listen");
 
     if (!settings.contains("fUseProxy"))
@@ -171,9 +145,9 @@ void OptionsModel::Init(bool resetSettings)
     if (!settings.contains("addrProxy"))
         settings.setValue("addrProxy", "127.0.0.1:9050");
     // Only try to set -proxy, if user has enabled fUseProxy
-    if (settings.value("fUseProxy").toBool() && !SoftSetArg("-proxy", settings.value("addrProxy").toString().toStdString()))
+    if (settings.value("fUseProxy").toBool() && !gArgs.SoftSetArg("-proxy", settings.value("addrProxy").toString().toStdString()))
         addOverriddenOption("-proxy");
-    else if(!settings.value("fUseProxy").toBool() && !GetArg("-proxy", "").empty())
+    else if(!settings.value("fUseProxy").toBool() && !gArgs.GetArg("-proxy", "").empty())
         addOverriddenOption("-proxy");
 
     if (!settings.contains("fUseSeparateProxyTor"))
@@ -181,27 +155,49 @@ void OptionsModel::Init(bool resetSettings)
     if (!settings.contains("addrSeparateProxyTor"))
         settings.setValue("addrSeparateProxyTor", "127.0.0.1:9050");
     // Only try to set -onion, if user has enabled fUseSeparateProxyTor
-    if (settings.value("fUseSeparateProxyTor").toBool() && !SoftSetArg("-onion", settings.value("addrSeparateProxyTor").toString().toStdString()))
+    if (settings.value("fUseSeparateProxyTor").toBool() && !gArgs.SoftSetArg("-onion", settings.value("addrSeparateProxyTor").toString().toStdString()))
         addOverriddenOption("-onion");
-    else if(!settings.value("fUseSeparateProxyTor").toBool() && !GetArg("-onion", "").empty())
+    else if(!settings.value("fUseSeparateProxyTor").toBool() && !gArgs.GetArg("-onion", "").empty())
         addOverriddenOption("-onion");
 
     // Display
     if (!settings.contains("language"))
         settings.setValue("language", "");
-    if (!SoftSetArg("-lang", settings.value("language").toString().toStdString()))
+    if (!gArgs.SoftSetArg("-lang", settings.value("language").toString().toStdString()))
         addOverriddenOption("-lang");
 
     language = settings.value("language").toString();
+}
+
+/** Helper function to copy contents from one QSettings to another.
+ * By using allKeys this also covers nested settings in a hierarchy.
+ */
+static void CopySettings(QSettings& dst, const QSettings& src)
+{
+    for (const QString& key : src.allKeys()) {
+        dst.setValue(key, src.value(key));
+    }
+}
+
+/** Back up a QSettings to an ini-formatted file. */
+static void BackupSettings(const fs::path& filename, const QSettings& src)
+{
+    qWarning() << "Backing up GUI settings to" << GUIUtil::boostPathToQString(filename);
+    QSettings dst(GUIUtil::boostPathToQString(filename), QSettings::IniFormat);
+    dst.clear();
+    CopySettings(dst, src);
 }
 
 void OptionsModel::Reset()
 {
     QSettings settings;
 
+    // Backup old settings to chain-specific datadir for troubleshooting
+    BackupSettings(GetDataDir(true) / "guisettings.ini.bak", settings);
+
     // Remove all entries from our QSettings object
     settings.clear();
-    resetSettings = true; // Needed in trivechain.cpp during shotdown to also remove the window positions
+    resetSettings = true; // Needed in dash.cpp during shotdown to also remove the window positions
 
     // default setting for OptionsModel::StartAtStartup - disabled
     if (GUIUtil::GetStartOnSystemStartup())
@@ -271,16 +267,16 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
             return settings.value("fShowMasternodesTab");
         case ShowAdvancedPSUI:
             return fShowAdvancedPSUI;
-        case ShowExclusiveSendPopups:
-            return settings.value("fShowExclusiveSendPopups");
+        case ShowPrivateSendPopups:
+            return settings.value("fShowPrivateSendPopups");
         case LowKeysWarning:
             return settings.value("fLowKeysWarning");
-        case ExclusiveSendRounds:
-            return settings.value("nExclusiveSendRounds");
-        case ExclusiveSendAmount:
-            return settings.value("nExclusiveSendAmount");
-        case ExclusiveSendMultiSession:
-            return settings.value("fExclusiveSendMultiSession");
+        case PrivateSendRounds:
+            return settings.value("nPrivateSendRounds");
+        case PrivateSendAmount:
+            return settings.value("nPrivateSendAmount");
+        case PrivateSendMultiSession:
+            return settings.value("fPrivateSendMultiSession");
 #endif
         case DisplayUnit:
             return nDisplayUnit;
@@ -418,39 +414,8 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
                 setRestartRequired(true);
             }
             break;
-        case ShowAdvancedPSUI:
-            fShowAdvancedPSUI = value.toBool();
-            settings.setValue("fShowAdvancedPSUI", fShowAdvancedPSUI);
-            Q_EMIT advancedPSUIChanged(fShowAdvancedPSUI);
-            break;
-        case ShowExclusiveSendPopups:
-            settings.setValue("fShowExclusiveSendPopups", value);
-            break;
         case LowKeysWarning:
             settings.setValue("fLowKeysWarning", value);
-            break;
-        case ExclusiveSendRounds:
-            if (settings.value("nExclusiveSendRounds") != value)
-            {
-                exclusiveSendClient.nExclusiveSendRounds = value.toInt();
-                settings.setValue("nExclusiveSendRounds", exclusiveSendClient.nExclusiveSendRounds);
-                Q_EMIT exclusiveSendRoundsChanged();
-            }
-            break;
-        case ExclusiveSendAmount:
-            if (settings.value("nExclusiveSendAmount") != value)
-            {
-                exclusiveSendClient.nExclusiveSendAmount = value.toInt();
-                settings.setValue("nExclusiveSendAmount", exclusiveSendClient.nExclusiveSendAmount);
-                Q_EMIT privateSentAmountChanged();
-            }
-            break;
-        case ExclusiveSendMultiSession:
-            if (settings.value("fExclusiveSendMultiSession") != value)
-            {
-                exclusiveSendClient.fExclusiveSendMultiSession = value.toBool();
-                settings.setValue("fExclusiveSendMultiSession", exclusiveSendClient.fExclusiveSendMultiSession);
-            }
             break;
 #endif
         case DisplayUnit:

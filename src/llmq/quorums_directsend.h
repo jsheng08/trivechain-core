@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2019-2020 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -107,7 +107,7 @@ private:
         std::unordered_set<uint256, StaticSaltedHasher> children;
     };
     std::unordered_map<uint256, NonLockedTxInfo, StaticSaltedHasher> nonLockedTxs;
-    std::unordered_multimap<uint256, std::pair<uint32_t, uint256>> nonLockedTxsByInputs;
+    std::unordered_map<COutPoint, uint256, SaltedOutpointHasher> nonLockedTxsByOutpoints;
 
     std::unordered_set<uint256, StaticSaltedHasher> pendingRetryTxs;
 
@@ -120,7 +120,7 @@ public:
     void InterruptWorkerThread();
 
 public:
-    bool ProcessTx(const CTransaction& tx, const Consensus::Params& params);
+    bool ProcessTx(const CTransaction& tx, bool allowReSigning, const Consensus::Params& params);
     bool CheckCanLock(const CTransaction& tx, bool printDebug, const Consensus::Params& params);
     bool CheckCanLock(const COutPoint& outpoint, bool printDebug, const uint256& txHash, CAmount* retValue, const Consensus::Params& params);
     bool IsLocked(const uint256& txHash);
@@ -139,12 +139,17 @@ public:
     bool ProcessPendingDirectSendLocks();
     std::unordered_set<uint256> ProcessPendingDirectSendLocks(int signHeight, const std::unordered_map<uint256, std::pair<NodeId, CDirectSendLock>>& pend, bool ban);
     void ProcessDirectSendLock(NodeId from, const uint256& hash, const CDirectSendLock& islock);
-    void UpdateWalletTransaction(const uint256& txid, const CTransactionRef& tx);
+    void UpdateWalletTransaction(const CTransactionRef& tx, const CDirectSendLock& islock);
 
-    void SyncTransaction(const CTransaction &tx, const CBlockIndex *pindex, int posInBlock);
-    void AddNonLockedTx(const CTransactionRef& tx);
+    void ProcessNewTransaction(const CTransactionRef& tx, const CBlockIndex* pindex, bool allowReSigning);
+    void TransactionAddedToMempool(const CTransactionRef& tx);
+    void BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted);
+    void BlockDisconnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindexDisconnected);
+
+    void AddNonLockedTx(const CTransactionRef& tx, const CBlockIndex* pindexMined);
     void RemoveNonLockedTx(const uint256& txid, bool retryChildren);
     void RemoveConflictedTx(const CTransaction& tx);
+    void TruncateRecoveredSigsForInputs(const CDirectSendLock& islock);
 
     void NotifyChainLock(const CBlockIndex* pindexChainLock);
     void UpdatedBlockTip(const CBlockIndex* pindexNew);
@@ -159,6 +164,7 @@ public:
 
     bool AlreadyHave(const CInv& inv);
     bool GetDirectSendLockByHash(const uint256& hash, CDirectSendLock& ret);
+    bool GetDirectSendLockHashByTxid(const uint256& txid, uint256& ret);
 
     size_t GetDirectSendLockCount();
 
@@ -167,15 +173,8 @@ public:
 
 extern CDirectSendManager* quorumDirectSendManager;
 
-// This involves 2 sporks: SPORK_2_DIRECTSEND_ENABLED and SPORK_20_DIRECTSEND_LLMQ_BASED
-// SPORK_2_DIRECTSEND_ENABLED generally enables/disables DirectSend and SPORK_20_DIRECTSEND_LLMQ_BASED switches
-// between the old and the new (LLMQ based) system
-// TODO When the new system is fully deployed and enabled, we can remove this special handling in a future version
-// and revert to only using SPORK_2_DIRECTSEND_ENABLED.
-bool IsOldDirectSendEnabled();
-bool IsNewDirectSendEnabled();
 bool IsDirectSendEnabled();
 
-}
+} // namespace llmq
 
 #endif//TRIVECHAIN_QUORUMS_DIRECTSEND_H

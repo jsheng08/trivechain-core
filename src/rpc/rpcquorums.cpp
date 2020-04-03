@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Trivechain developers
+// Copyright (c) 2017-2020 The Trivechain Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,6 +16,7 @@ void quorum_list_help()
 {
     throw std::runtime_error(
             "quorum list ( count )\n"
+            "List of on-chain quorums\n"
             "\nArguments:\n"
             "1. count           (number, optional) Number of quorums to list. Will list active quorums\n"
             "                   if \"count\" is not specified.\n"
@@ -69,6 +70,7 @@ void quorum_info_help()
 {
     throw std::runtime_error(
             "quorum info llmqType \"quorumHash\" ( includeSkShare )\n"
+            "Return information about a quorum\n"
             "\nArguments:\n"
             "1. llmqType              (int, required) LLMQ type.\n"
             "2. \"quorumHash\"          (string, required) Block hash of quorum.\n"
@@ -91,6 +93,7 @@ UniValue BuildQuorumInfo(const llmq::CQuorumCPtr& quorum, bool includeMembers, b
             auto& dmn = quorum->members[i];
             UniValue mo(UniValue::VOBJ);
             mo.push_back(Pair("proTxHash", dmn->proTxHash.ToString()));
+            mo.push_back(Pair("pubKeyOperator", dmn->pdmnState->pubKeyOperator.Get().ToString()));
             mo.push_back(Pair("valid", quorum->qc.validMembers[i]));
             if (quorum->qc.validMembers[i]) {
                 CBLSPublicKey pubKey = quorum->GetPubKeyShare(i);
@@ -195,7 +198,7 @@ void quorum_memberof_help()
             "quorum memberof \"proTxHash\" (quorumCount)\n"
             "Checks which quorums the given masternode is a member of.\n"
             "\nArguments:\n"
-            "1. \"proTxHash\"              (string, required) ProTxHash of the masternode.\n"
+            "1. \"proTxHash\"                (string, required) ProTxHash of the masternode.\n"
             "2. scanQuorumsCount           (number, optional) Number of quorums to scan for. If not specified,\n"
             "                              the active quorum count for each specific quorum type is used."
     );
@@ -237,7 +240,6 @@ UniValue quorum_memberof(const JSONRPCRequest& request)
             count = (size_t)scanQuorumsCount;
         }
         auto quorums = llmq::quorumManager->ScanQuorums(params.type, count);
-        
         for (auto& quorum : quorums) {
             if (quorum->IsMember(dmn->proTxHash)) {
                 auto json = BuildQuorumInfo(quorum, false, false);
@@ -255,6 +257,7 @@ void quorum_sign_help()
 {
     throw std::runtime_error(
             "quorum sign llmqType \"id\" \"msgHash\"\n"
+            "Threshold-sign a message\n"
             "\nArguments:\n"
             "1. llmqType              (int, required) LLMQ type.\n"
             "2. \"id\"                  (string, required) Request id.\n"
@@ -266,6 +269,7 @@ void quorum_hasrecsig_help()
 {
     throw std::runtime_error(
             "quorum hasrecsig llmqType \"id\" \"msgHash\"\n"
+            "Test if a valid recovered signature is present\n"
             "\nArguments:\n"
             "1. llmqType              (int, required) LLMQ type.\n"
             "2. \"id\"                  (string, required) Request id.\n"
@@ -277,6 +281,7 @@ void quorum_getrecsig_help()
 {
     throw std::runtime_error(
             "quorum getrecsig llmqType \"id\" \"msgHash\"\n"
+            "Get a recovered signature\n"
             "\nArguments:\n"
             "1. llmqType              (int, required) LLMQ type.\n"
             "2. \"id\"                  (string, required) Request id.\n"
@@ -288,6 +293,7 @@ void quorum_isconflicting_help()
 {
     throw std::runtime_error(
             "quorum isconflicting llmqType \"id\" \"msgHash\"\n"
+            "Test if a conflict exists\n"
             "\nArguments:\n"
             "1. llmqType              (int, required) LLMQ type.\n"
             "2. \"id\"                  (string, required) Request id.\n"
@@ -385,7 +391,7 @@ UniValue quorum_dkgsimerror(const JSONRPCRequest& request)
             "\nAvailable commands:\n"
             "  list              - List of on-chain quorums\n"
             "  info              - Return information about a quorum\n"
-            "  dkgsimerror       - Simulates DKG errors and malicious behavior.\n"
+            "  dkgsimerror       - Simulates DKG errors and malicious behavior\n"
             "  dkgstatus         - Return the status of the current DKG process\n"
             "  memberof          - Checks which quorums the given masternode is a member of\n"
             "  sign              - Threshold-sign a message\n"
