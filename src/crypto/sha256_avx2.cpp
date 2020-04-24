@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <immintrin.h>
 
-#include "sha256.h"
-#include "common.h"
+#include "crypto/sha256.h"
+#include "crypto/common.h"
 
 namespace sha256d64_avx2 {
 namespace {

@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <inttypes.h>
-#include "extra.h"
+#include "algo/extra.h"
 
 #if defined(__arm__) && defined(__APCS_32__)
 #define EXTERN_SHA256
