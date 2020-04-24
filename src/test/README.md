@@ -5,15 +5,15 @@ and tests weren't explicitly disabled.
 
 After configuring, they can be run with `make check`.
 
-To run the dashd tests manually, launch `src/test/test_trivechain`.
+To run the trivechaind tests manually, launch `src/test/test_trivechain`.
 
-To add more dashd tests, add `BOOST_AUTO_TEST_CASE` functions to the existing
+To add more trivechaind tests, add `BOOST_AUTO_TEST_CASE` functions to the existing
 .cpp files in the `test/` directory or add new .cpp files that
 implement new BOOST_AUTO_TEST_SUITE sections.
 
-To run the dash-qt tests manually, launch `src/qt/test/test_trivechain-qt`
+To run the trivechain-qt tests manually, launch `src/qt/test/test_trivechain-qt`
 
-To add more dash-qt tests, add them to the `src/qt/test/` directory and
+To add more trivechain-qt tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.
 
 ### Running individual tests
@@ -23,9 +23,9 @@ example, to run just the getarg_tests verbosely:
 
     test_trivechain --log_level=all --run_test=getarg_tests
 
-... or to run just the doubledash test:
+... or to run just the doubletrivechain test:
 
-    test_trivechain --run_test=getarg_tests/doubledash
+    test_trivechain --run_test=getarg_tests/doubletrivechain
 
 Run `test_trivechain --help` for the full list.
 
