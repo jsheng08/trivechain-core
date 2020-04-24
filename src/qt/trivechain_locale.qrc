@@ -13,7 +13,6 @@
         <file alias="nl">locale/trivechain_nl.qm</file>
         <file alias="pl">locale/trivechain_pl.qm</file>
         <file alias="pt">locale/trivechain_pt.qm</file>
-        <file alias="ro">locale/trivechain_ro.qm</file>
         <file alias="ru">locale/trivechain_ru.qm</file>
         <file alias="sk">locale/trivechain_sk.qm</file>
         <file alias="th">locale/trivechain_th.qm</file>

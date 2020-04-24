@@ -21,7 +21,6 @@ QT_TS = \
   qt/locale/trivechain_nl.ts \
   qt/locale/trivechain_pl.ts \
   qt/locale/trivechain_pt.ts \
-  qt/locale/trivechain_ro.ts \
   qt/locale/trivechain_ru.ts \
   qt/locale/trivechain_sk.ts \
   qt/locale/trivechain_th.ts \
