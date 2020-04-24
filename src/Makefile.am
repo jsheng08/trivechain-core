@@ -494,7 +494,8 @@ libtrivechain_consensus_a_SOURCES = \
   uint256.h \
   utilstrencodings.cpp \
   utilstrencodings.h \
-  version.h
+  version.h \
+  $(BITCOIN_CORE_H)
 
 # common: shared between trivechaind, and trivechain-qt and non-server tools
 libtrivechain_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
