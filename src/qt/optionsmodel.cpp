@@ -90,14 +90,6 @@ void OptionsModel::Init(bool resetSettings)
     if (!settings.contains("digits"))
         settings.setValue("digits", "2");
 
-    // PrivateSend
-    if (!settings.contains("fShowAdvancedPSUI"))
-        settings.setValue("fShowAdvancedPSUI", false);
-    fShowAdvancedPSUI = settings.value("fShowAdvancedPSUI", false).toBool();
-
-    if (!settings.contains("fShowPrivateSendPopups"))
-        settings.setValue("fShowPrivateSendPopups", true);
-
     if (!settings.contains("fLowKeysWarning"))
         settings.setValue("fLowKeysWarning", true);
 #endif // ENABLE_WALLET
@@ -265,18 +257,8 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
             return settings.value("bSpendZeroConfChange");
         case ShowMasternodesTab:
             return settings.value("fShowMasternodesTab");
-        case ShowAdvancedPSUI:
-            return fShowAdvancedPSUI;
-        case ShowPrivateSendPopups:
-            return settings.value("fShowPrivateSendPopups");
         case LowKeysWarning:
             return settings.value("fLowKeysWarning");
-        case PrivateSendRounds:
-            return settings.value("nPrivateSendRounds");
-        case PrivateSendAmount:
-            return settings.value("nPrivateSendAmount");
-        case PrivateSendMultiSession:
-            return settings.value("fPrivateSendMultiSession");
 #endif
         case DisplayUnit:
             return nDisplayUnit;

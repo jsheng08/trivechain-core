@@ -90,13 +90,7 @@ public:
         SendToOther,
         RecvWithAddress,
         RecvFromOther,
-        SendToSelf,
-        RecvWithPrivateSend,
-        PrivateSendDenominate,
-        PrivateSendCollateralPayment,
-        PrivateSendMakeCollaterals,
-        PrivateSendCreateDenominations,
-        PrivateSend
+        SendToSelf
     };
 
     /** Number of confirmation recommended for accepting a transaction */

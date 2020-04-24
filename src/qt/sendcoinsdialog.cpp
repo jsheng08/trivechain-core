@@ -87,14 +87,6 @@ SendCoinsDialog::SendCoinsDialog(const PlatformStyle *_platformStyle, QWidget *p
 
     // Trivechain specific
     QSettings settings;
-    //TODO remove Darksend sometime after 0.14.1
-    if (settings.contains("bUseDarkSend")) {
-        settings.setValue("bUsePrivateSend", settings.value("bUseDarkSend").toBool());
-        settings.remove("bUseDarkSend");
-    }
-    if (!settings.contains("bUsePrivateSend"))
-        settings.setValue("bUsePrivateSend", false);
-
     //TODO remove InstantX sometime after 0.14.1
     if (settings.contains("bUseInstantX")) {
         settings.remove("bUseInstantX");
@@ -102,10 +94,6 @@ SendCoinsDialog::SendCoinsDialog(const PlatformStyle *_platformStyle, QWidget *p
     if (settings.contains("bUseDirectSend")) {
         settings.remove("bUseDirectSend");
     }
-
-    ui->checkUsePrivateSend->setChecked(false);
-    ui->checkUsePrivateSend->setVisible(false);
-    CoinControlDialog::coinControl->UsePrivateSend(false);
 
     // Coin Control: clipboard actions
     QAction *clipboardQuantityAction = new QAction(tr("Copy quantity"), this);
@@ -297,8 +285,6 @@ void SendCoinsDialog::send(QList<SendCoinsRecipient> recipients)
 
     updateCoinControlState(ctrl);
 
-    ctrl.UsePrivateSend(ui->checkUsePrivateSend->isChecked());
-
     prepareStatus = model->prepareTransaction(currentTransaction, ctrl);
 
     // process prepareStatus and on error generate message shown to user
@@ -365,13 +351,7 @@ void SendCoinsDialog::send(QList<SendCoinsRecipient> recipients)
     questionString.append("<br /><br />");
     questionString.append(formatted.join("<br />"));
     questionString.append("<br />");
-
-
-    if(ctrl.IsUsingPrivateSend()) {
-        questionString.append(tr("using") + " <b>" + tr("PrivateSend funds only") + "</b>");
-    } else {
-        questionString.append(tr("using") + " <b>" + tr("any available funds") + "</b>");
-    }
+    questionString.append(tr("using") + " <b>" + tr("any available funds") + "</b>");
 
     if (displayedEntries < messageEntries) {
         questionString.append("<br />");
@@ -389,10 +369,6 @@ void SendCoinsDialog::send(QList<SendCoinsRecipient> recipients)
         questionString.append(BitcoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), txFee));
         questionString.append("</span> ");
         questionString.append(tr("are added as transaction fee"));
-
-        if (ctrl.IsUsingPrivateSend()) {
-            questionString.append(" " + tr("(PrivateSend transactions have higher fees usually due to no change output being allowed)"));
-        }
     }
 
     // Show some additioinal information
@@ -402,21 +378,6 @@ void SendCoinsDialog::send(QList<SendCoinsRecipient> recipients)
     questionString.append("<br />");
     CFeeRate feeRate(txFee, currentTransaction.getTransactionSize());
     questionString.append(tr("Fee rate: %1").arg(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), feeRate.GetFeePerK())) + "/kB");
-
-    if (ctrl.IsUsingPrivateSend()) {
-        // append number of inputs
-        questionString.append("<hr />");
-        int nInputs = currentTransaction.getTransaction()->tx->vin.size();
-        questionString.append(tr("This transaction will consume %n input(s)", "", nInputs));
-
-        // warn about potential privacy issues when spending too many inputs at once
-        if (nInputs >= 10 && ctrl.IsUsingPrivateSend()) {
-            questionString.append("<br />");
-            questionString.append("<span style='" + GUIUtil::getThemedStyleQString(GUIUtil::ThemedStyle::TS_ERROR) + "'>");
-            questionString.append(tr("Warning: Using PrivateSend with %1 or more inputs can harm your privacy and is not recommended").arg(10));
-            questionString.append("</span> ");
-        }
-    }
 
     // add total amount in all subdivision units
     questionString.append("<hr />");
@@ -604,12 +565,7 @@ void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfir
     {
 	    uint64_t bal = 0;
         QSettings settings;
-        settings.setValue("bUsePrivateSend", ui->checkUsePrivateSend->isChecked());
-	    if(ui->checkUsePrivateSend->isChecked()) {
-		    bal = anonymizedBalance;
-	    } else {
-		    bal = balance;
-	    }
+		bal = balance;
 
         ui->labelBalance->setText(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), bal));
     }
@@ -619,7 +575,6 @@ void SendCoinsDialog::updateDisplayUnit()
 {
     setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(), model->getAnonymizedBalance(),
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
-    CoinControlDialog::coinControl->UsePrivateSend(ui->checkUsePrivateSend->isChecked());
     coinControlUpdateLabels();
     ui->customFee->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
     updateMinFeeLabel();
@@ -929,8 +884,6 @@ void SendCoinsDialog::coinControlUpdateLabels()
                 CoinControlDialog::fSubtractFeeFromAmount = true;
         }
     }
-
-    ui->checkUsePrivateSend->setChecked(CoinControlDialog::coinControl->IsUsingPrivateSend());
 
     if (CoinControlDialog::coinControl->HasSelected())
     {

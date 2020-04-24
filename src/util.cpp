@@ -297,7 +297,6 @@ bool GetLogCategory(uint64_t *f, const std::string *str)
                 | BCLog::LLMQ_SIGS
                 | BCLog::MNPAYMENTS
                 | BCLog::MNSYNC
-                | BCLog::PRIVATESEND
                 | BCLog::SPORK;
             return true;
         }

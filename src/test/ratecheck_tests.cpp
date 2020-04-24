@@ -2,7 +2,7 @@
 
 #include "governance/governance.h"
 
-#include "test/test_dash.h"
+#include "test/test_trivechain.h"
 
 #include <boost/test/unit_test.hpp>
 

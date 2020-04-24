@@ -119,7 +119,6 @@ public:
 
 OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) :
     QWidget(parent),
-    timer(nullptr),
     ui(new Ui::OverviewPage),
     clientModel(0),
     walletModel(0),
@@ -144,12 +143,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     // init "out of sync" warning labels
     ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");
-    ui->labelPrivateSendSyncStatus->setText("(" + tr("out of sync") + ")");
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
-
-    // hide PS frame (helps to preserve saved size)
-    // we'll setup and make it visible in updateAdvancedPSUI() later if we are not in litemode
-    ui->framePrivateSend->setVisible(false);
 
     // start with displaying the "out of sync" warnings
     showOutOfSyncWarning(true);
@@ -168,7 +162,6 @@ void OverviewPage::handleOutOfSyncWarningClicks()
 
 OverviewPage::~OverviewPage()
 {
-    if(timer) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
     delete ui;
 }
 
@@ -200,8 +193,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
-
-    updatePrivateSendProgress();
 
     if (walletModel) {
         int numISLocks = walletModel->getNumISLocks();

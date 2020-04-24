@@ -10,6 +10,7 @@
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "crypto/common.h"
+#include "algo/hash_algos.h"
 
 static const uint32_t X16R_ACTIVATION_TIME = 1555872222;
 static const uint32_t MAINNET_X16RV2_ACTIVATION_TIME = 1569945600;

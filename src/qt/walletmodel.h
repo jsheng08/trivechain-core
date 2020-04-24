@@ -248,7 +248,6 @@ private:
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
     int cachedNumISLocks;
-    int cachedPrivateSendRounds;
 
     QTimer *pollTimer;
 

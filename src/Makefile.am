@@ -113,6 +113,50 @@ endif
 BITCOIN_CORE_H = \
   addrdb.h \
   addressindex.h \
+  algo/sph_groestl.h \
+  algo/sph_types.h \
+  algo/sph_blake.h \
+  algo/sph_bmw.h \
+  algo/sph_jh.h \
+  algo/sph_keccak.h \
+  algo/sph_skein.h \
+  algo/sph_luffa.h \
+  algo/sph_cubehash.h \
+  algo/sph_simd.h \
+  algo/sph_echo.h \
+  algo/sph_shavite.h \
+  algo/sph_sha2.h \
+  algo/sph_haval.h \
+  algo/sph_tiger.h \
+  algo/lyra2.h \
+  algo/sponge.h \
+  algo/gost_streebog.h \
+  algo/hash_algos.h \
+  algo/groestl.c \
+  algo/blake.c \
+  algo/bmw.c \
+  algo/cubehash.c \
+  algo/echo.c \
+  algo/jh.c \
+  algo/keccak.c \
+  algo/luffa.c \
+  algo/shavite.c \
+  algo/simd.c \
+  algo/skein.c \
+  algo/hamsi.c \
+  algo/whirlpool.c \
+  algo/shabal.c \
+  algo/fugue.c \
+  algo/sha2.c \
+  algo/extra.c \
+  algo/extra.h \
+  algo/sph_sha2big.c \
+  algo/haval.c \
+  algo/tiger.cpp \
+  algo/lyra2.cpp \
+  algo/sponge.cpp \
+  algo/sph_sha2.c \
+  algo/gost_streebog.c \
   spentindex.h \
   addrman.h \
   base58.h \
@@ -376,70 +420,21 @@ crypto_libtrivechain_crypto_base_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_
 crypto_libtrivechain_crypto_base_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
-  crypto/aes_helper.c \
-  crypto/blake.c \
-  crypto/bmw.c \
-  crypto/chacha20.cpp \
   crypto/chacha20.h \
-  crypto/chacha_poly_aead.cpp \
-  crypto/chacha_poly_aead.h \
+  crypto/chacha20.cpp \
   crypto/common.h \
-  crypto/cubehash.c \
-  crypto/echo.c \
-  crypto/extra.c \
-  crypto/extra.h \
-  crypto/fugue.c \
-  crypto/gost_streebog.c \
-  crypto/gost_streebog.h \
-  crypto/groestl.c \
-  crypto/hamsi.c \
-  crypto/hash_algo.h \
-  crypto/haval.c \
   crypto/hmac_sha256.cpp \
   crypto/hmac_sha256.h \
   crypto/hmac_sha512.cpp \
   crypto/hmac_sha512.h \
-  crypto/jh.c \
-  crypto/keccak.c \
-  crypto/luffa.c \
-  crypto/lyra2.cpp \
-  crypto/lyra2.h \
-  crypto/poly1305.cpp \
-  crypto/poly1305.h \
   crypto/ripemd160.cpp \
-  crypto/ripemd160.h \
+  crypto/aes_helper.c \
   crypto/sha1.cpp \
   crypto/sha1.h \
-  crypto/sha2.c \
   crypto/sha256.cpp \
   crypto/sha256.h \
-  crypto/sha512.cpp \
   crypto/sha512.h \
-  crypto/shabal.c \
-  crypto/shavite.c \
-  crypto/simd.c \
-  crypto/skein.c \
-  crypto/sph_blake.h \
-  crypto/sph_bmw.h \
-  crypto/sph_cubehash.h \
-  crypto/sph_echo.h \
-  crypto/sph_groestl.h \
-  crypto/sph_haval.h \
-  crypto/sph_jh.h \
-  crypto/sph_keccak.h \
-  crypto/sph_luffa.h \
-  crypto/sph_sha2.c \
-  crypto/sph_sha2.h \
-  crypto/sph_sha2big.c \
-  crypto/sph_shavite.h \
-  crypto/sph_simd.h \
-  crypto/sph_skein.h \
-  crypto/sph_tiger.h \
-  crypto/sph_types.h \
-  crypto/sponge.cpp \
-  crypto/sponge.h \
-  crypto/tiger.cpp \
-  crypto/whirlpool.c
+  crypto/sha512.cpp
 
 if USE_ASM
 crypto_libtrivechain_crypto_base_a_SOURCES += crypto/sha256_sse4.cpp
@@ -456,75 +451,6 @@ crypto_libtrivechain_crypto_avx2_a_CPPFLAGS = $(AM_CPPFLAGS)
 crypto_libtrivechain_crypto_avx2_a_CXXFLAGS += $(AVX2_CXXFLAGS)
 crypto_libtrivechain_crypto_avx2_a_CPPFLAGS += -DENABLE_AVX2
 crypto_libtrivechain_crypto_avx2_a_SOURCES = crypto/sha256_avx2.cpp
-
-# x11
-crypto_libtrivechain_crypto_base_a_SOURCES += \
-  crypto/aes.cpp \
-  crypto/aes.h \
-  crypto/aes_helper.c \
-  crypto/blake.c \
-  crypto/bmw.c \
-  crypto/chacha20.cpp \
-  crypto/chacha20.h \
-  crypto/chacha_poly_aead.cpp \
-  crypto/chacha_poly_aead.h \
-  crypto/common.h \
-  crypto/cubehash.c \
-  crypto/echo.c \
-  crypto/extra.c \
-  crypto/extra.h \
-  crypto/fugue.c \
-  crypto/gost_streebog.c \
-  crypto/gost_streebog.h \
-  crypto/groestl.c \
-  crypto/hamsi.c \
-  crypto/hash_algo.h \
-  crypto/haval.c \
-  crypto/hmac_sha256.cpp \
-  crypto/hmac_sha256.h \
-  crypto/hmac_sha512.cpp \
-  crypto/hmac_sha512.h \
-  crypto/jh.c \
-  crypto/keccak.c \
-  crypto/luffa.c \
-  crypto/lyra2.cpp \
-  crypto/lyra2.h \
-  crypto/poly1305.cpp \
-  crypto/poly1305.h \
-  crypto/ripemd160.cpp \
-  crypto/ripemd160.h \
-  crypto/sha1.cpp \
-  crypto/sha1.h \
-  crypto/sha2.c \
-  crypto/sha256.cpp \
-  crypto/sha256.h \
-  crypto/sha512.cpp \
-  crypto/sha512.h \
-  crypto/shabal.c \
-  crypto/shavite.c \
-  crypto/simd.c \
-  crypto/skein.c \
-  crypto/sph_blake.h \
-  crypto/sph_bmw.h \
-  crypto/sph_cubehash.h \
-  crypto/sph_echo.h \
-  crypto/sph_groestl.h \
-  crypto/sph_haval.h \
-  crypto/sph_jh.h \
-  crypto/sph_keccak.h \
-  crypto/sph_luffa.h \
-  crypto/sph_sha2.c \
-  crypto/sph_sha2.h \
-  crypto/sph_sha2big.c \
-  crypto/sph_shavite.h \
-  crypto/sph_simd.h \
-  crypto/sph_skein.h \
-  crypto/sph_tiger.h \
-  crypto/sph_types.h \
-  crypto/sponge.cpp \
-  crypto/sponge.h \
-  crypto/tiger.cpp \
-  crypto/whirlpool.c
 
 crypto_libtrivechain_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libtrivechain_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)

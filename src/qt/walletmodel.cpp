@@ -48,8 +48,7 @@ WalletModel::WalletModel(const PlatformStyle *platformStyle, CWallet *_wallet, O
     cachedWatchImmatureBalance(0),
     cachedEncryptionStatus(Unencrypted),
     cachedNumBlocks(0),
-    cachedNumISLocks(0),
-    cachedPrivateSendRounds(0)
+    cachedNumISLocks(0)
 {
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fForceCheckBalanceChanged = false;

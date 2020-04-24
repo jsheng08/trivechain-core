@@ -16,8 +16,7 @@ enum class CoinType
     ALL_COINS,
     ONLY_DENOMINATED,
     ONLY_NONDENOMINATED,
-    ONLY_1000, // find masternode outputs including locked ones (use with caution)
-    ONLY_PRIVATESEND_COLLATERAL,
+    ONLY_1000 // find masternode outputs including locked ones (use with caution)
 };
 
 /** Coin Control Features. */
@@ -90,19 +89,7 @@ public:
     {
         vOutpoints.assign(setSelected.begin(), setSelected.end());
     }
-
-    // Trivechain-specific helpers
-
-    void UsePrivateSend(bool fUsePrivateSend)
-    {
-        nCoinType = fUsePrivateSend ? CoinType::ONLY_DENOMINATED : CoinType::ALL_COINS;
-    }
-
-    bool IsUsingPrivateSend() const
-    {
-        return nCoinType == CoinType::ONLY_DENOMINATED;
-    }
-
+    
 private:
     std::set<COutPoint> setSelected;
 };

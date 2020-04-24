@@ -434,9 +434,8 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
             "5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
             "                             The recipient will receive less amount of Trivechain than you enter in the amount field.\n"
             "6. \"use_is\"             (bool, optional, default=false) Deprecated and ignored\n"
-            "7. \"use_ps\"             (bool, optional, default=false) Use PrivateSend funds only\n"
-            "8. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
-            "9. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
+            "7. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
+            "8. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
             "       \"UNSET\"\n"
             "       \"ECONOMICAL\"\n"
             "       \"CONSERVATIVE\"\n"
@@ -475,15 +474,11 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     CCoinControl coin_control;
 
     if (request.params.size() > 6 && !request.params[6].isNull()) {
-        coin_control.UsePrivateSend(request.params[6].get_bool());
+        coin_control.m_confirm_target = ParseConfirmTarget(request.params[6]);
     }
 
     if (request.params.size() > 7 && !request.params[7].isNull()) {
-        coin_control.m_confirm_target = ParseConfirmTarget(request.params[7]);
-    }
-
-    if (request.params.size() > 8 && !request.params[8].isNull()) {
-        if (!FeeModeFromString(request.params[8].get_str(), coin_control.m_fee_mode)) {
+        if (!FeeModeFromString(request.params[7].get_str(), coin_control.m_fee_mode)) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid estimate_mode parameter");
         }
     }
@@ -1003,9 +998,8 @@ UniValue sendmany(const JSONRPCRequest& request)
             "      ,...\n"
             "    ]\n"
             "7. \"use_is\"                (bool, optional, default=false) Deprecated and ignored\n"
-            "8. \"use_ps\"                (bool, optional, default=false) Use PrivateSend funds only\n"
-            "9. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
-            "10. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
+            "8. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
+            "9. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
             "       \"UNSET\"\n"
             "       \"ECONOMICAL\"\n"
             "       \"CONSERVATIVE\"\n"
@@ -1046,15 +1040,11 @@ UniValue sendmany(const JSONRPCRequest& request)
     CCoinControl coin_control;
 
     if (request.params.size() > 7 && !request.params[7].isNull()) {
-        coin_control.UsePrivateSend(request.params[7].get_bool());
+        coin_control.m_confirm_target = ParseConfirmTarget(request.params[7]);
     }
 
     if (request.params.size() > 8 && !request.params[8].isNull()) {
-        coin_control.m_confirm_target = ParseConfirmTarget(request.params[8]);
-    }
-
-    if (request.params.size() > 9 && !request.params[9].isNull()) {
-        if (!FeeModeFromString(request.params[9].get_str(), coin_control.m_fee_mode)) {
+        if (!FeeModeFromString(request.params[8].get_str(), coin_control.m_fee_mode)) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid estimate_mode parameter");
         }
     }
@@ -2076,21 +2066,18 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
 
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 3) {
         throw std::runtime_error(
-            "walletpassphrase \"passphrase\" timeout ( mixingonly )\n"
+            "walletpassphrase \"passphrase\" timeout \n"
             "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
             "This is needed prior to performing transactions related to private keys such as sending trivechains\n"
             "\nArguments:\n"
             "1. \"passphrase\"        (string, required) The wallet passphrase\n"
             "2. timeout             (numeric, required) The time to keep the decryption key in seconds.\n"
-            "3. mixingonly          (boolean, optional, default=false) If is true sending functions are disabled.\n"
             "\nNote:\n"
             "Issuing the walletpassphrase command while the wallet is already unlocked will set a new unlock\n"
             "time that overrides the old one.\n"
             "\nExamples:\n"
             "\nUnlock the wallet for 60 seconds\n"
             + HelpExampleCli("walletpassphrase", "\"my pass phrase\" 60") +
-            "\nUnlock the wallet for 60 seconds but allow PrivateSend mixing only\n"
-            + HelpExampleCli("walletpassphrase", "\"my pass phrase\" 60 true") +
             "\nLock the wallet again (before 60 seconds)\n"
             + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n"
@@ -2115,17 +2102,10 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
 
     int64_t nSleepTime = request.params[1].get_int64();
 
-    bool fForMixingOnly = false;
-    if (request.params.size() >= 3)
-        fForMixingOnly = request.params[2].get_bool();
-
-    if (fForMixingOnly && !pwallet->IsLocked(true) && pwallet->IsLocked())
-        throw JSONRPCError(RPC_WALLET_ALREADY_UNLOCKED, "Error: Wallet is already unlocked for mixing only.");
-
     if (!pwallet->IsLocked())
-        throw JSONRPCError(RPC_WALLET_ALREADY_UNLOCKED, "Error: Wallet is already fully unlocked.");
+        throw JSONRPCError(RPC_WALLET_ALREADY_UNLOCKED, "Error: Wallet is already unlocked.");
 
-    if (!pwallet->Unlock(strWalletPass, fForMixingOnly))
+    if (!pwallet->Unlock(strWalletPass, false))
         throw JSONRPCError(RPC_WALLET_PASSPHRASE_INCORRECT, "Error: The wallet passphrase entered was incorrect.");
 
     pwallet->TopUpKeyPool();
@@ -2477,7 +2457,6 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
             "  \"walletname\": xxxxx,             (string) the wallet name\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
             "  \"balance\": xxxxxxx,         (numeric) the total confirmed balance of the wallet in " + CURRENCY_UNIT + "\n"
-            "  \"privatesend_balance\": xxxxxx, (numeric) the PrivateSend balance in " + CURRENCY_UNIT + "\n"
             "  \"unconfirmed_balance\": xxx, (numeric) the total unconfirmed balance of the wallet in " + CURRENCY_UNIT + "\n"
             "  \"immature_balance\": xxxxxx, (numeric) the total immature balance of the wallet in " + CURRENCY_UNIT + "\n"
             "  \"txcount\": xxxxxxx,         (numeric) the total number of transactions in the wallet\n"
@@ -2512,7 +2491,6 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
     obj.push_back(Pair("walletname", pwallet->GetName()));
     obj.push_back(Pair("walletversion", pwallet->GetVersion()));
     obj.push_back(Pair("balance",       ValueFromAmount(pwallet->GetBalance())));
-    obj.push_back(Pair("privatesend_balance",       ValueFromAmount(pwallet->GetAnonymizedBalance())));
     obj.push_back(Pair("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance())));
     obj.push_back(Pair("immature_balance",    ValueFromAmount(pwallet->GetImmatureBalance())));
     obj.push_back(Pair("txcount",       (int)pwallet->mapWallet.size()));
@@ -2822,7 +2800,6 @@ UniValue listunspent(const JSONRPCRequest& request)
         entry.push_back(Pair("spendable", out.fSpendable));
         entry.push_back(Pair("solvable", out.fSolvable));
         entry.push_back(Pair("safe", out.fSafe));
-        entry.push_back(Pair("ps_rounds", pwallet->GetCappedOutpointPrivateSendRounds(COutPoint(out.tx->GetHash(), out.i))));
         results.push_back(entry);
     }
 
@@ -3108,8 +3085,6 @@ static const CRPCCommand commands[] =
     { "wallet",             "sendtoaddress",            &sendtoaddress,            false,  {"address","amount","comment","comment_to","subtractfeefromamount","use_ps","conf_target","estimate_mode"} },
     { "wallet",             "setaccount",               &setaccount,               true,   {"address","account"} },
     { "wallet",             "settxfee",                 &settxfee,                 true,   {"amount"} },
-    { "wallet",             "setprivatesendrounds",     &setprivatesendrounds,     true,   {"rounds"} },
-    { "wallet",             "setprivatesendamount",     &setprivatesendamount,     true,   {"amount"} },
     { "wallet",             "signmessage",              &signmessage,              true,   {"address","message"} },
     { "wallet",             "walletlock",               &walletlock,               true,   {} },
     { "wallet",             "walletpassphrasechange",   &walletpassphrasechange,   true,   {"oldpassphrase","newpassphrase"} },

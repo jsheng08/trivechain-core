@@ -38,7 +38,7 @@ bool CoinControlDialog::fSubtractFeeFromAmount = false;
 
 bool CCoinControlWidgetItem::operator<(const QTreeWidgetItem &other) const {
     int column = treeWidget()->sortColumn();
-    if (column == CoinControlDialog::COLUMN_AMOUNT || column == CoinControlDialog::COLUMN_DATE || column == CoinControlDialog::COLUMN_CONFIRMATIONS || column == CoinControlDialog::COLUMN_PRIVATESEND_ROUNDS)
+    if (column == CoinControlDialog::COLUMN_AMOUNT || column == CoinControlDialog::COLUMN_DATE || column == CoinControlDialog::COLUMN_CONFIRMATIONS)
         return data(column, Qt::UserRole).toLongLong() < other.data(column, Qt::UserRole).toLongLong();
     return QTreeWidgetItem::operator<(other);
 }
@@ -138,7 +138,6 @@ CoinControlDialog::CoinControlDialog(const PlatformStyle *_platformStyle, QWidge
     ui->treeWidget->setColumnWidth(COLUMN_AMOUNT, 100);
     ui->treeWidget->setColumnWidth(COLUMN_LABEL, 170);
     ui->treeWidget->setColumnWidth(COLUMN_ADDRESS, 190);
-    ui->treeWidget->setColumnWidth(COLUMN_PRIVATESEND_ROUNDS, 88);
     ui->treeWidget->setColumnWidth(COLUMN_DATE, 80);
     ui->treeWidget->setColumnWidth(COLUMN_CONFIRMATIONS, 100);
     ui->treeWidget->setColumnHidden(COLUMN_TXHASH, true);         // store transaction hash in this column, but don't show it
@@ -544,14 +543,7 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
         {
             nChange = nAmount - nPayAmount;
 
-            // PrivateSend Fee = overpay
-            if(coinControl->IsUsingPrivateSend() && nChange > 0)
-            {
-                nPayFee = std::max(nChange, nPayFee);
-                nChange = 0;
-                if (CoinControlDialog::fSubtractFeeFromAmount)
-                    nBytes -= 34; // we didn't detect lack of change above
-            } else if (!CoinControlDialog::fSubtractFeeFromAmount) {
+            if (!CoinControlDialog::fSubtractFeeFromAmount) {
                 nChange -= nPayFee;
             }
 
@@ -730,17 +722,7 @@ void CoinControlDialog::updateView()
             itemOutput->setText(COLUMN_DATE, GUIUtil::dateTimeStr(out.tx->GetTxTime()));
             itemOutput->setToolTip(COLUMN_DATE, GUIUtil::dateTimeStr(out.tx->GetTxTime()));
             itemOutput->setData(COLUMN_DATE, Qt::UserRole, QVariant((qlonglong)out.tx->GetTxTime()));
-
-
-            // PrivateSend rounds
-            COutPoint outpoint = COutPoint(out.tx->tx->GetHash(), out.i);
-            int nRounds = vpwallets[0]->GetRealOutpointPrivateSendRounds(outpoint);
-
-            if (nRounds >= 0 || LogAcceptCategory(BCLog::PRIVATESEND)) itemOutput->setText(COLUMN_PRIVATESEND_ROUNDS, QString::number(nRounds));
-            else itemOutput->setText(COLUMN_PRIVATESEND_ROUNDS, tr("n/a"));
-            itemOutput->setData(COLUMN_PRIVATESEND_ROUNDS, Qt::UserRole, QVariant((qlonglong)nRounds));
-
-
+            
             // confirmations
             itemOutput->setText(COLUMN_CONFIRMATIONS, QString::number(out.nDepth));
             itemOutput->setData(COLUMN_CONFIRMATIONS, Qt::UserRole, QVariant((qlonglong)out.nDepth));

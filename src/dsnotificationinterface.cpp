@@ -64,7 +64,6 @@ void CDSNotificationInterface::TransactionAddedToMempool(const CTransactionRef& 
 {
     llmq::quorumDirectSendManager->TransactionAddedToMempool(ptx);
     llmq::chainLocksHandler->TransactionAddedToMempool(ptx, nAcceptTime);
-    CPrivateSend::TransactionAddedToMempool(ptx);
 }
 
 void CDSNotificationInterface::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted)
@@ -79,14 +78,12 @@ void CDSNotificationInterface::BlockConnected(const std::shared_ptr<const CBlock
 
     llmq::quorumDirectSendManager->BlockConnected(pblock, pindex, vtxConflicted);
     llmq::chainLocksHandler->BlockConnected(pblock, pindex, vtxConflicted);
-    CPrivateSend::BlockConnected(pblock, pindex, vtxConflicted);
 }
 
 void CDSNotificationInterface::BlockDisconnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindexDisconnected)
 {
     llmq::quorumDirectSendManager->BlockDisconnected(pblock, pindexDisconnected);
     llmq::chainLocksHandler->BlockDisconnected(pblock, pindexDisconnected);
-    CPrivateSend::BlockDisconnected(pblock, pindexDisconnected);
 }
 
 void CDSNotificationInterface::NotifyMasternodeListChanged(bool undo, const CDeterministicMNList& oldMNList, const CDeterministicMNListDiff& diff)
@@ -98,5 +95,4 @@ void CDSNotificationInterface::NotifyMasternodeListChanged(bool undo, const CDet
 void CDSNotificationInterface::NotifyChainLock(const CBlockIndex* pindex, const llmq::CChainLockSig& clsig)
 {
     llmq::quorumDirectSendManager->NotifyChainLock(pindex);
-    CPrivateSend::NotifyChainLock(pindex);
 }

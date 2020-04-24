@@ -908,24 +908,14 @@ public:
     bool SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, uint64_t nMaxAncestors, std::vector<COutput> vCoins, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, CoinType nCoinType = CoinType::ALL_COINS) const;
 
     // Coin selection
-    bool SelectPSInOutPairsByDenominations(int nDenom, CAmount nValueMin, CAmount nValueMax, std::vector< std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsRet);
-    bool GetCollateralTxDSIn(CTxDSIn& txdsinRet, CAmount& nValueRet) const;
-    bool SelectPrivateCoins(CAmount nValueMin, CAmount nValueMax, std::vector<CTxIn>& vecTxInRet, CAmount& nValueRet, int nPrivateSendRoundsMin, int nPrivateSendRoundsMax) const;
-
     bool SelectCoinsGroupedByAddresses(std::vector<CompactTallyItem>& vecTallyRet, bool fSkipDenominated = true, bool fAnonymizable = true, bool fSkipUnconfirmed = true, int nMaxOupointsPerAddress = -1) const;
 
-    /// Get 1000TRIVECHAIN output and keys which can be used for the Masternode
+    /// Get 10000 TRVC output and keys which can be used for the Masternode
     bool GetMasternodeOutpointAndKeys(COutPoint& outpointRet, CPubKey& pubKeyRet, CKey& keyRet, const std::string& strTxHash = "", const std::string& strOutputIndex = "");
     /// Extract txin information and keys from output
     bool GetOutpointAndKeysFromOutput(const COutput& out, COutPoint& outpointRet, CPubKey& pubKeyRet, CKey& keyRet);
 
-    bool HasCollateralInputs(bool fOnlyConfirmed = true) const;
     int  CountInputsWithAmount(CAmount nInputAmount) const;
-
-    // get the PrivateSend chain depth for a given input
-    int GetRealOutpointPrivateSendRounds(const COutPoint& outpoint, int nRounds = 0) const;
-    // respect current settings
-    int GetCappedOutpointPrivateSendRounds(const COutPoint& outpoint) const;
 
     bool IsDenominated(const COutPoint& outpoint) const;
 

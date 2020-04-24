@@ -64,7 +64,6 @@ UniValue getinfo(const JSONRPCRequest& request)
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
             "  \"balance\": xxxxxxx,         (numeric) the total trivechain balance of the wallet\n"
-            "  \"privatesend_balance\": xxxxxx, (numeric) the PrivateSend balance in " + CURRENCY_UNIT + "\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -103,7 +102,6 @@ UniValue getinfo(const JSONRPCRequest& request)
     if (pwallet) {
         obj.push_back(Pair("walletversion", pwallet->GetVersion()));
         obj.push_back(Pair("balance",       ValueFromAmount(pwallet->GetBalance())));
-        obj.push_back(Pair("privatesend_balance",       ValueFromAmount(pwallet->GetAnonymizedBalance())));
     }
 #endif
     obj.push_back(Pair("blocks",        (int)chainActive.Height()));

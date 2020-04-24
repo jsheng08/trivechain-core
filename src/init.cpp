@@ -587,7 +587,7 @@ std::string HelpMessage(HelpMessageMode mode)
     }
     strUsage += HelpMessageOpt("-shrinkdebugfile", _("Shrink debug.log file on client startup (default: 1 when no -debug)"));
     AppendParamsHelpMessages(strUsage, showDebug);
-    strUsage += HelpMessageOpt("-litemode", strprintf(_("Disable all Trivechain specific functionality (Masternodes, PrivateSend, DirectSend, Governance) (0-1, default: %u)"), 0));
+    strUsage += HelpMessageOpt("-litemode", strprintf(_("Disable all Trivechain specific functionality (Masternodes, DirectSend, Governance) (0-1, default: %u)"), 0));
     strUsage += HelpMessageOpt("-sporkaddr=<trivechainaddress>", strprintf(_("Override spork address. Only useful for regtest and devnet. Using this on mainnet or testnet will ban you.")));
     strUsage += HelpMessageOpt("-minsporkkeys=<n>", strprintf(_("Overrides minimum spork signers to change spork value. Only useful for regtest and devnet. Using this on mainnet or testnet will ban you.")));
 
@@ -2091,10 +2091,6 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     scheduler.scheduleEvery(boost::bind(&CMasternodeUtils::DoMaintenance, boost::ref(*g_connman)), 1 * 1000);
-
-    if (fMasternodeMode) {
-        scheduler.scheduleEvery(boost::bind(&CPrivateSendServer::DoMaintenance, boost::ref(privateSendServer), boost::ref(*g_connman)), 1 * 1000);
-    }
 
     llmq::StartLLMQSystem();
 

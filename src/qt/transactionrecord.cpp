@@ -94,23 +94,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         }
 
         isminetype fAllToMe = ISMINE_SPENDABLE;
-        bool fAllToMeDenom = true;
-        int nToMe = 0;
-        for (const CTxOut& txout : wtx.tx->vout) {
-            if(wallet->IsMine(txout)) {
-                fAllToMeDenom = fAllToMeDenom && CPrivateSend::IsDenominatedAmount(txout.nValue);
-                nToMe++;
-            }
-            isminetype mine = wallet->IsMine(txout);
-            if(mine & ISMINE_WATCH_ONLY) involvesWatchAddress = true;
-            if(fAllToMe > mine) fAllToMe = mine;
-        }
-
-        if(fAllFromMeDenom && fAllToMeDenom && nFromMe * nToMe) {
-            parts.append(TransactionRecord(hash, nTime, TransactionRecord::PrivateSendDenominate, "", -nDebit, nCredit));
-            parts.last().involvesWatchAddress = false;   // maybe pass to TransactionRecord as constructor argument
-        }
-        else if (fAllFromMe && fAllToMe)
+        if (fAllFromMe && fAllToMe)
         {
             // Payment to self
             // TODO: this section still not accurate but covers most cases,
@@ -120,43 +104,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             // Payment to self by default
             sub.type = TransactionRecord::SendToSelf;
             sub.strAddress = "";
-
-            if(mapValue["DS"] == "1")
-            {
-                sub.type = TransactionRecord::PrivateSend;
-                CTxDestination address;
-                if (ExtractDestination(wtx.tx->vout[0].scriptPubKey, address))
-                {
-                    // Sent to Trivechain Address
-                    sub.strAddress = CBitcoinAddress(address).ToString();
-                }
-                else
-                {
-                    // Sent to IP, or other non-address transaction like OP_EVAL
-                    sub.strAddress = mapValue["to"];
-                }
-            }
-            else
-            {
-                sub.idx = parts.size();
-                if(wtx.tx->vin.size() == 1 && wtx.tx->vout.size() == 1
-                    && CPrivateSend::IsCollateralAmount(nDebit)
-                    && CPrivateSend::IsCollateralAmount(nCredit)
-                    && CPrivateSend::IsCollateralAmount(-nNet))
-                {
-                    sub.type = TransactionRecord::PrivateSendCollateralPayment;
-                } else {
-                    for (const auto& txout : wtx.tx->vout) {
-                        if (txout.nValue == CPrivateSend::GetMaxCollateralAmount()) {
-                            sub.type = TransactionRecord::PrivateSendMakeCollaterals;
-                            continue; // Keep looking, could be a part of PrivateSendCreateDenominations
-                        } else if (CPrivateSend::IsDenominatedAmount(txout.nValue)) {
-                            sub.type = TransactionRecord::PrivateSendCreateDenominations;
-                            break; // Done, it's definitely a tx creating mixing denoms, no need to look any further
-                        }
-                    }
-                }
-            }
 
             CAmount nChange = wtx.GetChange();
 
@@ -175,19 +122,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             CAmount nTxFee = nDebit - wtx.tx->GetValueOut();
 
             bool fDone = false;
-            if(wtx.tx->vin.size() == 1 && wtx.tx->vout.size() == 1
-                && CPrivateSend::IsCollateralAmount(nDebit)
-                && nCredit == 0 // OP_RETURN
-                && CPrivateSend::IsCollateralAmount(-nNet))
-            {
-                TransactionRecord sub(hash, nTime);
-                sub.idx = 0;
-                sub.type = TransactionRecord::PrivateSendCollateralPayment;
-                sub.debit = -nDebit;
-                parts.append(sub);
-                fDone = true;
-            }
-
             for (unsigned int nOut = 0; nOut < wtx.tx->vout.size() && !fDone; nOut++)
             {
                 const CTxOut& txout = wtx.tx->vout[nOut];
@@ -214,11 +148,6 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                     // Sent to IP, or other non-address transaction like OP_EVAL
                     sub.type = TransactionRecord::SendToOther;
                     sub.strAddress = mapValue["to"];
-                }
-
-                if(mapValue["DS"] == "1")
-                {
-                    sub.type = TransactionRecord::PrivateSend;
                 }
 
                 CAmount nValue = txout.nValue;

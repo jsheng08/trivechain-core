@@ -48,12 +48,7 @@ public:
         DatabaseCache,          // int
         SpendZeroConfChange,    // bool
         ShowMasternodesTab,     // bool
-        ShowAdvancedPSUI,       // bool
-        ShowPrivateSendPopups,  // bool
         LowKeysWarning,         // bool
-        PrivateSendRounds,      // int
-        PrivateSendAmount,      // int
-        PrivateSendMultiSession,// bool
         Listen,                 // bool
         OptionIDRowCount,
     };
@@ -103,9 +98,6 @@ private:
     void checkAndMigrate();
 Q_SIGNALS:
     void displayUnitChanged(int unit);
-    void privateSendRoundsChanged();
-    void privateSentAmountChanged();
-    void advancedPSUIChanged(bool);
     void coinControlFeaturesChanged(bool);
     void hideTrayIconChanged(bool);
 };
