@@ -12,11 +12,20 @@
 #include "crypto/common.h"
 #include "crypto/hash_algos.h"
 
+static const uint32_t X16R_ACTIVATION_TIME = 1555872222;
+static const uint32_t MAINNET_X16RV2_ACTIVATION_TIME = 1569945600;
+
 uint256 CBlockHeader::GetHash() const
 {
     std::vector<unsigned char> vch(80);
     CVectorWriter ss(SER_NETWORK, PROTOCOL_VERSION, vch, 0);
     ss << *this;
+    
+    if (nTime > MAINNET_X16RV2_ACTIVATION_TIME) {
+        return HashX16RV2(((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
+    } else if (nTime > X16R_ACTIVATION_TIME) {
+        return HashX16R(((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
+    }
     return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
 }
 
