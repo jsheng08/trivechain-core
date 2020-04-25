@@ -4,13 +4,13 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
+#include "algo/hash_algos.h"
 
 #include "hash.h"
 #include "streams.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "crypto/common.h"
-#include "algo/hash_algos.h"
 
 
 static const uint32_t X16R_ACTIVATION_TIME = 1555872222;
