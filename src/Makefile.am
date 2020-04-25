@@ -1,5 +1,6 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2014-2018 The Trivechain Core developers
+# Copyright (c) 2014-2018 The Dash Core developers
+# Copyright (c) 2018-2020 The Trivechain Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -110,53 +111,9 @@ endif
 
 .PHONY: FORCE check-symbols check-security
 # trivechain core #
-TRIVECHAIN_CORE_H = \
+BITCOIN_CORE_H = \
   addrdb.h \
-  addressindex.h \  
-  algo/sph_groestl.h \
-  algo/sph_types.h \
-  algo/sph_blake.h \
-  algo/sph_bmw.h \
-  algo/sph_jh.h \
-  algo/sph_keccak.h \
-  algo/sph_skein.h \
-  algo/sph_luffa.h \
-  algo/sph_cubehash.h \
-  algo/sph_simd.h \
-  algo/sph_echo.h \
-  algo/sph_shavite.h \
-  algo/sph_sha2.h \
-  algo/sph_haval.h \
-  algo/sph_tiger.h \
-  algo/lyra2.h \
-  algo/sponge.h \
-  algo/gost_streebog.h \
-  algo/hash_algos.h \
-  algo/groestl.c \
-  algo/blake.c \
-  algo/bmw.c \
-  algo/cubehash.c \
-  algo/echo.c \
-  algo/jh.c \
-  algo/keccak.c \
-  algo/luffa.c \
-  algo/shavite.c \
-  algo/simd.c \
-  algo/skein.c \
-  algo/hamsi.c \
-  algo/whirlpool.c \
-  algo/shabal.c \
-  algo/fugue.c \
-  algo/sha2.c \
-  algo/extra.c \
-  algo/extra.h \
-  algo/sph_sha2big.c \
-  algo/haval.c \
-  algo/tiger.cpp \
-  algo/lyra2.cpp \
-  algo/sponge.cpp \
-  algo/sph_sha2.c \
-  algo/gost_streebog.c \
+  addressindex.h \
   spentindex.h \
   addrman.h \
   base58.h \
@@ -388,7 +345,7 @@ libtrivechain_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(TRIVECHAIN_CORE_H)
+  $(BITCOIN_CORE_H)
 
 if ENABLE_ZMQ
 libtrivechain_zmq_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
@@ -412,7 +369,7 @@ libtrivechain_wallet_a_SOURCES = \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
-  $(TRIVECHAIN_CORE_H)
+  $(BITCOIN_CORE_H)
 
 # crypto primitives library
 crypto_libtrivechain_crypto_base_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES) $(PIC_FLAGS)
@@ -420,6 +377,8 @@ crypto_libtrivechain_crypto_base_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_
 crypto_libtrivechain_crypto_base_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
+  crypto/chacha_poly_aead.h \
+  crypto/chacha_poly_aead.cpp \
   crypto/chacha20.h \
   crypto/chacha20.cpp \
   crypto/common.h \
@@ -427,18 +386,17 @@ crypto_libtrivechain_crypto_base_a_SOURCES = \
   crypto/hmac_sha256.h \
   crypto/hmac_sha512.cpp \
   crypto/hmac_sha512.h \
+  crypto/poly1305.h \
+  crypto/poly1305.cpp \
   crypto/ripemd160.cpp \
   crypto/aes_helper.c \
+  crypto/ripemd160.h \
   crypto/sha1.cpp \
   crypto/sha1.h \
   crypto/sha256.cpp \
   crypto/sha256.h \
-  crypto/sha512.h \
   crypto/sha512.cpp \
-  crypto/chacha_poly_aead.cpp \
-  crypto/chacha_poly_aead.h \
-  crypto/poly1305.cpp \
-  crypto/poly1305.h
+  crypto/sha512.h
 
 if USE_ASM
 crypto_libtrivechain_crypto_base_a_SOURCES += crypto/sha256_sse4.cpp
@@ -455,6 +413,32 @@ crypto_libtrivechain_crypto_avx2_a_CPPFLAGS = $(AM_CPPFLAGS)
 crypto_libtrivechain_crypto_avx2_a_CXXFLAGS += $(AVX2_CXXFLAGS)
 crypto_libtrivechain_crypto_avx2_a_CPPFLAGS += -DENABLE_AVX2
 crypto_libtrivechain_crypto_avx2_a_SOURCES = crypto/sha256_avx2.cpp
+
+# x11
+crypto_libtrivechain_crypto_base_a_SOURCES += \
+  crypto/blake.c \
+  crypto/bmw.c \
+  crypto/cubehash.c \
+  crypto/echo.c \
+  crypto/groestl.c \
+  crypto/jh.c \
+  crypto/keccak.c \
+  crypto/luffa.c \
+  crypto/shavite.c \
+  crypto/simd.c \
+  crypto/skein.c \
+  crypto/sph_blake.h \
+  crypto/sph_bmw.h \
+  crypto/sph_cubehash.h \
+  crypto/sph_echo.h \
+  crypto/sph_groestl.h \
+  crypto/sph_jh.h \
+  crypto/sph_keccak.h \
+  crypto/sph_luffa.h \
+  crypto/sph_shavite.h \
+  crypto/sph_simd.h \
+  crypto/sph_skein.h \
+  crypto/sph_types.h
 
 crypto_libtrivechain_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libtrivechain_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
@@ -498,8 +482,7 @@ libtrivechain_consensus_a_SOURCES = \
   uint256.h \
   utilstrencodings.cpp \
   utilstrencodings.h \
-  version.h \
-  $(TRIVECHAIN_CORE_H)
+  version.h
 
 # common: shared between trivechaind, and trivechain-qt and non-server tools
 libtrivechain_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
@@ -524,7 +507,7 @@ libtrivechain_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(TRIVECHAIN_CORE_H)
+  $(BITCOIN_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
@@ -554,7 +537,7 @@ libtrivechain_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(TRIVECHAIN_CORE_H)
+  $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT
 libtrivechain_util_a_SOURCES += compat/glibc_compat.cpp
@@ -566,7 +549,7 @@ libtrivechain_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libtrivechain_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libtrivechain_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(TRIVECHAIN_CORE_H)
+  $(BITCOIN_CORE_H)
 
 nodist_libtrivechain_util_a_SOURCES = $(srcdir)/obj/build.h
 #

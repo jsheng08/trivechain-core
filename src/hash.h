@@ -1,12 +1,13 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2014-2019 The Trivechain Core developers
+// Copyright (c) 2019 The Trivechain developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_HASH_H
-#define BITCOIN_HASH_H
-
+#ifndef TRVC_HASH_H
+#define TRVC_HASH_H
+#include <iostream>
+#include <chrono>
 #include "crypto/ripemd160.h"
 #include "crypto/sha256.h"
 #include "prevector.h"
@@ -14,6 +15,10 @@
 #include "uint256.h"
 #include "version.h"
 
+
+extern "C" {
+#include "crypto/sph_sha2.h"
+}
 #include <vector>
 
 typedef uint256 ChainCode;
@@ -302,4 +307,4 @@ uint64_t SipHashUint256Extra(uint64_t k0, uint64_t k1, const uint256& val, uint3
 extern double algoHashTotal[16];
 extern int algoHashHits[16];
 
-#endif // BITCOIN_HASH_H
+#endif // TRVC_HASH_H
