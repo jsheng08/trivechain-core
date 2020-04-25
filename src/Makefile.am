@@ -391,8 +391,6 @@ crypto_libtrivechain_crypto_base_a_SOURCES = \
   crypto/ripemd160.cpp \
   crypto/aes_helper.c \
   crypto/ripemd160.h \
-  crypto/sph_sha2.cpp \
-  crypto/sph_sha2.h \
   crypto/sha1.cpp \
   crypto/sha1.h \
   crypto/sha256.cpp \
