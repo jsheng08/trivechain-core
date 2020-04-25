@@ -4,13 +4,13 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
-#include "algo/hash_algos.h"
 
 #include "hash.h"
 #include "streams.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "crypto/common.h"
+#include "algo/hash_algos.h"
 
 
 static const uint32_t X16R_ACTIVATION_TIME = 1555872222;
@@ -37,24 +37,21 @@ void BlockNetwork::SetNetwork(const std::string& net)
 
 uint256 CBlockHeader::GetHash() const
 {
-    std::vector<unsigned char> vch(80);
-    CVectorWriter ss(SER_NETWORK, PROTOCOL_VERSION, vch, 0);
-    ss << *this;
     if (bNetwork.fOnTestnet) {
         if (nTime > TESTNET_X16RV2_ACTIVATION_TIME) {
-            return HashX16RV2((const char *)vch.data(),  (const char *)vch.data() + vch.size(), hashPrevBlock);
+            return HashX16RV2(BEGIN(nVersion), END(nNonce), hashPrevBlock);
         } 
     } else if (bNetwork.fOnRegtest) {
         if (nTime > REGTEST_X16RV2_ACTIVATION_TIME) {
-            return HashX16RV2((const char *)vch.data(),  (const char *)vch.data() + vch.size(), hashPrevBlock);
+            return HashX16RV2(BEGIN(nVersion), END(nNonce), hashPrevBlock);
         }
     }
     if (nTime > MAINNET_X16RV2_ACTIVATION_TIME) {
-        return HashX16RV2((const char *)vch.data(),  (const char *)vch.data() + vch.size(), hashPrevBlock);
+        return HashX16RV2(BEGIN(nVersion), END(nNonce), hashPrevBlock);
     } else if (nTime > X16R_ACTIVATION_TIME) {
-        return HashX16R((const char *)vch.data(),  (const char *)vch.data() + vch.size(), hashPrevBlock);
+        return HashX16R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
     }
-    return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
+    return HashX11(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlock::ToString() const
@@ -67,8 +64,9 @@ std::string CBlock::ToString() const
         hashMerkleRoot.ToString(),
         nTime, nBits, nNonce,
         vtx.size());
-    for (const auto& tx : vtx) {
-        s << "  " << tx->ToString() << "\n";
+    for (unsigned int i = 0; i < vtx.size(); i++)
+    {
+        s << "  " << vtx[i]->ToString() << "\n";
     }
     return s.str();
 }
