@@ -110,7 +110,7 @@ endif
 
 .PHONY: FORCE check-symbols check-security
 # trivechain core #
-BITCOIN_CORE_H = \
+TRIVECHAIN_CORE_H = \
   addrdb.h \
   addressindex.h \
   algo/sph_groestl.h \
@@ -388,7 +388,7 @@ libtrivechain_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 if ENABLE_ZMQ
 libtrivechain_zmq_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
@@ -412,7 +412,7 @@ libtrivechain_wallet_a_SOURCES = \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 # crypto primitives library
 crypto_libtrivechain_crypto_base_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES) $(PIC_FLAGS)
@@ -495,7 +495,7 @@ libtrivechain_consensus_a_SOURCES = \
   utilstrencodings.cpp \
   utilstrencodings.h \
   version.h \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 # common: shared between trivechaind, and trivechain-qt and non-server tools
 libtrivechain_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
@@ -520,7 +520,7 @@ libtrivechain_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
@@ -550,7 +550,7 @@ libtrivechain_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 if GLIBC_BACK_COMPAT
 libtrivechain_util_a_SOURCES += compat/glibc_compat.cpp
@@ -562,7 +562,7 @@ libtrivechain_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libtrivechain_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libtrivechain_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(BITCOIN_CORE_H)
+  $(TRIVECHAIN_CORE_H)
 
 nodist_libtrivechain_util_a_SOURCES = $(srcdir)/obj/build.h
 #
