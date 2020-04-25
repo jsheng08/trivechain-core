@@ -418,29 +418,50 @@ crypto_libtrivechain_crypto_avx2_a_SOURCES = crypto/sha256_avx2.cpp
 
 # x11
 crypto_libtrivechain_crypto_base_a_SOURCES += \
+  crypto/sph_groestl.h \
+  crypto/sph_blake.h \
+  crypto/sph_bmw.h \
+  crypto/sph_jh.h \
+  crypto/sph_keccak.h \
+  crypto/sph_skein.h \
+  crypto/sph_luffa.h \
+  crypto/sph_cubehash.h \
+  crypto/sph_simd.h \
+  crypto/sph_echo.h \
+  crypto/sph_shavite.h \
+  crypto/sph_sha2.h \
+  crypto/sph_haval.h \
+  crypto/sph_tiger.h \
+  crypto/sph_types.h \
+  crypto/lyra2.h \
+  crypto/sponge.h \
+  crypto/gost_streebog.h \
+  crypto/hash_algos.h \
+  crypto/groestl.c \
   crypto/blake.c \
   crypto/bmw.c \
   crypto/cubehash.c \
   crypto/echo.c \
-  crypto/groestl.c \
   crypto/jh.c \
   crypto/keccak.c \
   crypto/luffa.c \
   crypto/shavite.c \
   crypto/simd.c \
   crypto/skein.c \
-  crypto/sph_blake.h \
-  crypto/sph_bmw.h \
-  crypto/sph_cubehash.h \
-  crypto/sph_echo.h \
-  crypto/sph_groestl.h \
-  crypto/sph_jh.h \
-  crypto/sph_keccak.h \
-  crypto/sph_luffa.h \
-  crypto/sph_shavite.h \
-  crypto/sph_simd.h \
-  crypto/sph_skein.h \
-  crypto/sph_types.h
+  crypto/hamsi.c \
+  crypto/whirlpool.c \
+  crypto/shabal.c \
+  crypto/fugue.c \
+  crypto/sha2.c \
+  crypto/extra.c \
+  crypto/extra.h \
+  crypto/sph_sha2big.c \
+  crypto/haval.c \
+  crypto/tiger.cpp \
+  crypto/lyra2.cpp \
+  crypto/sponge.cpp \
+  crypto/sph_sha2.c \
+  crypto/gost_streebog.c
 
 crypto_libtrivechain_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libtrivechain_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
