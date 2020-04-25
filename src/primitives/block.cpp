@@ -22,9 +22,9 @@ uint256 CBlockHeader::GetHash() const
     ss << *this;
     
     if (nTime > MAINNET_X16RV2_ACTIVATION_TIME) {
-        return HashX16RV2(((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
+        return HashX16RV2((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
     } else if (nTime > X16R_ACTIVATION_TIME) {
-        return HashX16R(((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
+        return HashX16R((const char *)vch.data(), (const char *)vch.data() + vch.size(), hashPrevBlock);
     }
     return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
 }
