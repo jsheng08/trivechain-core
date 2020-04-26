@@ -260,8 +260,8 @@ public:
         consensus.BIP66Height = 450000;
         consensus.DIP0001Height = 450000;
         consensus.DIP0003Height = 445500;
-        consensus.DIP0003EnforcementHeight = 465000;
-        consensus.DIP0003EnforcementHash = uint256S("00000000017696d9df69539b8bb6e3532ef2eba0dd8f60470cdd03df41cbdc4d");
+        consensus.DIP0003EnforcementHeight = 465320;
+        consensus.DIP0003EnforcementHash = uint256S("0000000003ad23eebd064e39fc116b10f47d5359368229183291ea9f1116b9ab");
         consensus.powLimit = uint256S("00000fffff000000000000000000000000000000000000000000000000000000");
         consensus.nPowTargetTimespan = 24 * 60 * 60; // Adjustment using 24 hour
         consensus.nPowTargetSpacing = 60; // Trivechain: 1 minutes
