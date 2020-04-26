@@ -141,12 +141,12 @@ bool CQuorumBlockProcessor::ProcessBlock(const CBlock& block, const CBlockIndex*
         bool hasCommitmentInNewBlock = qcs.count(type) != 0;
         bool isCommitmentRequired = IsCommitmentRequired(type, pindex->nHeight);
 
-        if (hasCommitmentInNewBlock && !isCommitmentRequired) {
+        if (hasCommitmentInNewBlock && !isCommitmentRequired && pindex->nHeight > Params().GetConsensus().DIP0003EnforcementHeight) {
             // If we're either not in the mining phase or a non-null commitment was mined already, reject the block
             return state.DoS(100, false, REJECT_INVALID, "bad-qc-not-allowed");
         }
 
-        if (!hasCommitmentInNewBlock && isCommitmentRequired) {
+        if (!hasCommitmentInNewBlock && isCommitmentRequired && pindex->nHeight > Params().GetConsensus().DIP0003EnforcementHeight) {
             // If no non-null commitment was mined for the mining phase yet and the new block does not include
             // a (possibly null) commitment, the block should be rejected.
             return state.DoS(100, false, REJECT_INVALID, "bad-qc-missing");
