@@ -133,7 +133,7 @@ bool CFinalCommitment::VerifySizes(const Consensus::LLMQParams& params) const
 
 bool CheckLLMQCommitment(const CTransaction& tx, const CBlockIndex* pindexPrev, CValidationState& state)
 {
-    if (nHeight > Params().GetConsensus().DIP0003EnforcementHeight) {
+    if (pindexPrev->nHeight + 1 > Params().GetConsensus().DIP0003EnforcementHeight) {
         CFinalCommitmentTxPayload qcTx;
         if (!GetTxPayload(tx, qcTx)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-qc-payload");
