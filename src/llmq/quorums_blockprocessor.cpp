@@ -141,12 +141,12 @@ bool CQuorumBlockProcessor::ProcessBlock(const CBlock& block, const CBlockIndex*
         bool hasCommitmentInNewBlock = qcs.count(type) != 0;
         bool isCommitmentRequired = IsCommitmentRequired(type, pindex->nHeight);
 
-        if (hasCommitmentInNewBlock && !isCommitmentRequired && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
+        if (hasCommitmentInNewBlock && !isCommitmentRequired && pindex->nHeight > 465000) {
             // If we're either not in the mining phase or a non-null commitment was mined already, reject the block
             return state.DoS(100, false, REJECT_INVALID, "bad-qc-not-allowed");
         }
 
-        if (!hasCommitmentInNewBlock && isCommitmentRequired && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
+        if (!hasCommitmentInNewBlock && isCommitmentRequired && pindex->nHeight > 465000) {
             // If no non-null commitment was mined for the mining phase yet and the new block does not include
             // a (possibly null) commitment, the block should be rejected.
             return state.DoS(100, false, REJECT_INVALID, "bad-qc-missing");
@@ -177,7 +177,7 @@ static std::tuple<std::string, Consensus::LLMQType, uint32_t> BuildInversedHeigh
 
 bool CQuorumBlockProcessor::ProcessCommitment(int nHeight, const uint256& blockHash, const CFinalCommitment& qc, CValidationState& state)
 {
-    if (nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
+    if (nHeight > 465000) {
         auto& params = Params().GetConsensus().llmqs.at((Consensus::LLMQType)qc.llmqType);
 
         uint256 quorumHash = GetQuorumBlockHash((Consensus::LLMQType)qc.llmqType, nHeight);
