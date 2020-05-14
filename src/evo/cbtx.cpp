@@ -71,10 +71,10 @@ bool CheckCbTxMerkleRoots(const CBlock& block, const CBlockIndex* pindex, CValid
 
     if (pindex) {
         uint256 calculatedMerkleRoot;
-        if (!CalcCbTxMerkleRootMNList(block, pindex->pprev, calculatedMerkleRoot, state)) {
+        if (!CalcCbTxMerkleRootMNList(block, pindex->pprev, calculatedMerkleRoot, state) && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
             return state.DoS(100, false, REJECT_INVALID, "bad-cbtx-mnmerkleroot");
         }
-        if (calculatedMerkleRoot != cbTx.merkleRootMNList) {
+        if (calculatedMerkleRoot != cbTx.merkleRootMNList  && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
             return state.DoS(100, false, REJECT_INVALID, "bad-cbtx-mnmerkleroot");
         }
 
