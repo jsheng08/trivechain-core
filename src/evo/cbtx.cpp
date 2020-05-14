@@ -69,12 +69,12 @@ bool CheckCbTxMerkleRoots(const CBlock& block, const CBlockIndex* pindex, CValid
     int64_t nTime2 = GetTimeMicros(); nTimePayload += nTime2 - nTime1;
     LogPrint(BCLog::BENCHMARK, "          - GetTxPayload: %.2fms [%.2fs]\n", 0.001 * (nTime2 - nTime1), nTimePayload * 0.000001);
 
-    if (pindex) {
+    if (pindex  && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
         uint256 calculatedMerkleRoot;
-        if (!CalcCbTxMerkleRootMNList(block, pindex->pprev, calculatedMerkleRoot, state) && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
+        if (!CalcCbTxMerkleRootMNList(block, pindex->pprev, calculatedMerkleRoot, state)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-cbtx-mnmerkleroot");
         }
-        if (calculatedMerkleRoot != cbTx.merkleRootMNList  && pindex->nHeight > Params().GetConsensus().DIP0003FullyEnforcementHeight) {
+        if (calculatedMerkleRoot != cbTx.merkleRootMNList) {
             return state.DoS(100, false, REJECT_INVALID, "bad-cbtx-mnmerkleroot");
         }
 
